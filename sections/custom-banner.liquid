@@ -152,10 +152,21 @@ document.addEventListener('DOMContentLoaded', function() {
   transition: color .35s ease;
   }
   .bar-btn:before{
-  content:'';
-  background:black;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: #000;
+  transition: width .35s ease;
+  z-index: -1;
 }
-  .bar-btn:hover { opacity: 0.9; }
+
+.bar-btn:hover::before{
+  width: 100%;
+}
+  .bar-btn:hover {  color: #fff; }
   .arrow-icon { display: inline-block; transition: transform 0.15s ease; }
   .bar-btn:hover .arrow-icon { transform: translateX(3px); }
 
