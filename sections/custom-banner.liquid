@@ -1,196 +1,197 @@
 <div class="tisso-gift-bar" id="gift-bar-{{ section.id }}">
   <div class="bar-container">
-    {% comment %} Left/Brand Area with Hamburger for Mobile {% endcomment %}
-    <div class="bar-brand-wrapper">
-      <button type="button" class="bar-menu-toggle" aria-label="Toggle menu">
-        <span class="icon-hamburger">
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-      <div class="bar-brand">{{ section.settings.brand_text }}</div>
+    
+    <!-- Mobile Hamburger / Toggle Button -->
+    <button type="button" class="bar-toggle" aria-label="Toggle Navigation">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <!-- Centered Brand Logo/Text -->
+    <div class="bar-brand">
+      {{ section.settings.brand_text }}
     </div>
 
-    {% comment %} Desktop Content / Mobile Slide-down Panel {% endcomment %}
-    <div class="bar-content-panel">
-      <div class="bar-msg">{{ section.settings.message_text }}</div>
-      <div class="bar-action">
-        <a href="{{ section.settings.btn_link }}" class="gift-yellow-btn">
-          {{ section.settings.btn_text }} <span>→</span>
+    <!-- Dropdown Content Panel (Desktop Hidden Left/Right, Mobile Absolute Overlay) -->
+    <div class="bar-overlay-panel">
+      <div class="panel-inner">
+        <p class="bar-message">{{ section.settings.message_text }}</p>
+        <a href="{{ section.settings.btn_link }}" class="bar-btn">
+          {{ section.settings.btn_text }}
+          <svg class="arrow-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </a>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const giftBar = document.getElementById('gift-bar-{{ section.id }}');
-  const toggleBtn = giftBar.querySelector('.bar-menu-toggle');
+  const wrapper = document.getElementById('gift-bar-{{ section.id }}');
+  const toggleBtn = wrapper.querySelector('.bar-toggle');
   
   if (toggleBtn) {
-    toggleBtn.addEventListener('click', function() {
-      giftBar.classList.toggle('menu-open');
+    toggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      wrapper.classList.toggle('is-active');
     });
   }
+
+  // Dropdown ke baahar click karne par close ho jaye
+  document.addEventListener('click', function(e) {
+    if (!wrapper.contains(e.target)) {
+      wrapper.classList.remove('is-active');
+    }
+  });
 });
 </script>
 
 <style>
+  /* Base Container Styles */
   .tisso-gift-bar {
-    background: #f3f3f3;
-    padding: 14px 40px;
-    border-bottom: 1px solid #e5e5e5;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #e2e2e2;
     position: relative;
-    z-index: 999;
+    font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    z-index: 9999;
   }
   .bar-container {
-    max-width: 1400px;
+    max-width: 100%;
+    height: 65px;
     margin: 0 auto;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .bar-brand-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  .bar-menu-toggle {
-    display: none; /* Desktop par hidden */
+
+  /* Hamburger Styling & Interaction states */
+  .bar-toggle {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px;
-    z-index: 1001;
-  }
-  .bar-brand {
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #000;
-  }
-  .bar-content-panel {
+    padding: 10px 10px 10px 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    margin-left: 40px;
+    justify-content: center;
+    z-index: 10001;
   }
-  .bar-msg {
-    font-size: 14px;
-    color: #333;
-    text-align: center;
-    flex: 1;
-  }
-  .gift-yellow-btn {
-    background: #fff700;
-    color: #000;
-    padding: 12px 26px;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    text-transform: uppercase;
-  }
-
-  /* Hamburger Bars Styling & Animation CSS */
-  .icon-hamburger {
-    display: block;
-    width: 18px;
+  .hamburger-icon {
+    width: 22px;
     height: 14px;
     position: relative;
   }
-  .icon-hamburger span {
+  .hamburger-icon span {
     display: block;
     position: absolute;
     height: 2px;
     width: 100%;
-    background: #000;
-    transition: transform 0.25s ease, opacity 0.25s ease, top 0.25s ease;
+    background: #000000;
+    transition: all 0.2s ease-in-out;
   }
-  .icon-hamburger span:nth-child(1) { top: 0; }
-  .icon-hamburger span:nth-child(2) { top: 6px; }
-  .icon-hamburger span:nth-child(3) { top: 12px; }
+  .hamburger-icon span:nth-child(1) { top: 0; }
+  .hamburger-icon span:nth-child(2) { top: 6px; }
+  .hamburger-icon span:nth-child(3) { top: 12px; }
 
-  /* Open State (Cross Icon) Transformation */
-  .menu-open .icon-hamburger span:nth-child(1) {
+  /* Transform Hamburger to Cross (X) */
+  .is-active .hamburger-icon span:nth-child(1) {
     top: 6px;
     transform: rotate(45deg);
   }
-  .menu-open .icon-hamburger span:nth-child(2) {
+  .is-active .hamburger-icon span:nth-child(2) {
     opacity: 0;
   }
-  .menu-open .icon-hamburger span:nth-child(3) {
+  .is-active .hamburger-icon span:nth-child(3) {
     top: 6px;
     transform: rotate(-45deg);
   }
 
-  /* Mobile Version Custom Target Layout */
-  @media screen and (max-width: 768px) {
-    .tisso-gift-bar {
-      padding: 15px 20px;
-    }
-    .bar-container {
-      justify-content: flex-start;
-      position: relative;
-    }
-    .bar-brand-wrapper {
-      width: 100%;
-      justify-content: flex-start;
-    }
-    .bar-menu-toggle {
-      display: block; /* Mobile UI toggler activation */
-    }
-    .bar-brand {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+  /* Typography Design Branding */
+  .bar-brand {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #000000;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
 
-    /* Dropdown Panel sliding layout from top */
-    .bar-content-panel {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: #f3f3f3;
-      flex-direction: column;
-      margin-left: 0;
-      padding: 20px;
-      gap: 15px;
-      border-top: 1px solid #e5e5e5;
-      border-bottom: 1px solid #e5e5e5;
-      box-shadow: 0 10px 15px rgba(0,0,0,0.05);
-      
-      /* Hidden by default, slides down gracefully */
-      transform: translateY(-20px);
-      opacity: 0;
-      visibility: hidden;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-      z-index: 1000;
-    }
+  /* Overlay Dropdown Setup (Sliding Layout From Top) */
+  .bar-overlay-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #e2e2e2;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     
-    /* Toggle slide behavior active standard */
-    .menu-open .bar-content-panel {
-      transform: translateY(0);
-      opacity: 1;
-      visibility: visible;
-    }
-    .bar-msg {
-      font-size: 15px;
-    }
-    .gift-yellow-btn {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
+    /* Smooth CSS sliding behavior setup */
+    transform: translateY(-15px);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  }
+  .is-active .bar-overlay-panel {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Inner elements positioning */
+  .panel-inner {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 24px 20px 32px 20px;
+    text-align: center;
+  }
+  .bar-message {
+    font-size: 16px;
+    color: #1c1c1c;
+    margin: 0 0 20px 0;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+
+  /* Yellow Button Precise Mockup Styling */
+  .bar-btn {
+    background-color: #ffff00;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 14px 45px;
+    text-transform: uppercase;
+    transition: opacity 0.15s ease;
+  }
+  .bar-btn:hover {
+    opacity: 0.9;
+  }
+  .arrow-icon {
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+  .bar-btn:hover .arrow-icon {
+    transform: translateX(3px);
+  }
+
+  /* Responsive Adjustments if required on extra large viewports */
+  @media screen and (min-width: 990px) {
+    /* Desktop toggle interface configurations optionally handled here */
   }
 </style>
 
@@ -199,10 +200,12 @@ document.addEventListener('DOMContentLoaded', function() {
   "name": "Tisso Gift Header Bar",
   "settings": [
     { "type": "text", "id": "brand_text", "label": "Brand Name", "default": "TISSO VISON" },
-    { "type": "text", "id": "message_text", "label": "Message", "default": "Get started with your \"Mi Solo\" kit" },
+    { "type": "text", "id": "message_text", "label": "Message Text", "default": "Get started with your \"Mi Solo\" kit" },
     { "type": "text", "id": "btn_text", "label": "Button Label", "default": "CHOOSE GIFT" },
     { "type": "url", "id": "btn_link", "label": "Button Link" }
   ],
-  "presets": [{ "name": "Tisso Gift Header Bar" }]
+  "presets": [
+    { "name": "Tisso Gift Header Bar" }
+  ]
 }
 {% endschema %}
