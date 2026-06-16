@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
       height: 2px;
       width: 100%;
       background: #000000;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.25s ease-in-out;
     }
     .hamburger-icon span:nth-child(1) { top: 0; }
     .hamburger-icon span:nth-child(2) { top: 6px; }
@@ -185,46 +185,44 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
     }
 
-    /* Base layer default setup */
+    /* Base layer default setup with ultra smooth transition time */
     .base-layer {
       position: relative;
       opacity: 1;
       transform: translateX(0);
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
-    /* Overlay layer directly centered behind/over base layer horizontally */
+    /* Overlay layer positioning */
     .overlay-layer {
       display: block !important;
       position: absolute;
       opacity: 0;
-      transform: translateX(6px); /* Sirf horizontally right me offset rakha h */
+      transform: translateX(6px);
       pointer-events: none;
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
+      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
     }
 
     /* ========================================== */
-    /* ACTIVE STATE (Right-to-Left Overlap Match) */
+    /* ACTIVE STATE (Slower & Smoother Overlap)  */
     /* ========================================== */
-    
-    /* Transition chalte waqt overlay create hoga */
     .is-active .base-layer {
-      transform: translateX(-4px); /* Base logo smoothly khiska left */
+      transform: translateX(-4px); 
     }
     
     .is-active .overlay-layer {
-      opacity: 0.4;                /* Motion ke dauran instant fade overlap text ghost */
-      transform: translateX(-4px); /* Pure horizontal slide overlap right to left */
+      opacity: 0.4;                
+      transform: translateX(-4px); 
       
-      /* Animation khatam hote hi duplicate layer simple aur invisible ho jayegi */
-      animation: clearOverlay 0.38s ease forwards;
+      /* Pure smooth fade-out complete hone tak transition active rakhega */
+      animation: clearOverlay 0.68s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    /* Animation complete hone par pure simple single look ke liye framework */
+    /* Transition khatam hote hi clean simple frame balance karne ke liye */
     @keyframes clearOverlay {
       0% { opacity: 0.4; }
-      85% { opacity: 0.2; }
-      100% { opacity: 0; } /* End me temporary layer bilkul clear/invisible */
+      70% { opacity: 0.2; }
+      100% { opacity: 0; } 
     }
 
     /* Dropdown Overlay Panel */
@@ -240,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
       transform: translateY(-15px);
       opacity: 0;
       visibility: hidden;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
     }
     .is-active .bar-overlay-panel {
       transform: translateY(0);
