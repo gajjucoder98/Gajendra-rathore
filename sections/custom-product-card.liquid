@@ -111,7 +111,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
  
-  // जब यूज़र ड्रॉपडाउन बदलेगा तो प्राइस अपडेट करने के लिए फंक्शन
+
   function updateVariantPrice(card) {
     const colorSelect = card.querySelector('.color-select');
     const sizeSelect = card.querySelector('.size-select');
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
  
-  // ड्रॉपडाउन चेंज इवेंट पर प्राइस अपडेट करना
+
   document.addEventListener('change', function(e) {
     if (e.target.classList.contains('color-select') || e.target.classList.contains('size-select')) {
       const card = e.target.closest('.product-card');
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
  
-  // एड टू कार्ट और कार्ट रिफ्रेश फंक्शनलिटी
+
   document.addEventListener('click', async function (e) {
     if (!e.target.classList.contains('custom-add-to-cart')) return;
  
@@ -195,9 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!response.ok) throw new Error('Add to cart failed');
       const data = await response.json();
  
-      const FREE_VARIANT_ID = 43383113613379;
+      const FREE_VARIANT_ID = 8565446934713;
  
-      // गिफ्ट लॉजिक (Black + M होने पर)
+      
       if (selectedColor.toLowerCase() === 'black' && selectedSize.toLowerCase() === 'm') {
         await fetch('/cart/add.js', {
           method: 'POST',
@@ -208,37 +208,35 @@ document.addEventListener('DOMContentLoaded', function() {
  
       button.textContent = 'Added ✓';
  
-      // --- कार्ट और हेडर डॉट/काउंटर अपडेट करने का लॉजिक ---
      
-      // 1. स्टैंडर्ड Shopify थीम्स (जैसे Dawn) के लिए रिफ्रेश इवेंट
       if (window.sections && window.sections.renderBySectionId) {
         window.sections.renderBySectionId('cart-icon-bubble');
       }
      
-      // 2. पब्लिक पब्लिश-सब्सक्राइब (PubSub) इवेंट्स ट्रिगर करना
+      
       if (window.Shopify && window.Shopify.pubsub) {
         window.Shopify.pubsub.publish('cart-updated', {});
       }
  
-      // 3. कार्ट काउंट को JSON से लाइव फ़ेच करके अपडेट करना (बैकअप तरीका)
+     
       const cartRes = await fetch('/cart.js');
       const cartData = await cartRes.json();
      
-      // हेडर में कार्ट बबल/डॉट ढूंढ कर अपडेट करना
+      
       const cartBubbles = document.querySelectorAll('.cart-count-bubble, #cart-icon-bubble, .cart-link__count');
       cartBubbles.forEach(bubble => {
         if (cartData.item_count > 0) {
-          // अगर डॉट/काउंटर पहले से छुपा है तो उसे दिखाएँ
+         
           bubble.style.display = 'block';
           bubble.classList.remove('hidden');
          
-          // काउंटर के अंदर की संख्या बदलें
+         
           const countSpan = bubble.querySelector('span:not(.visually-hidden)') || bubble;
           if (countSpan) countSpan.textContent = cartData.item_count;
         }
       });
  
-      // कस्टम इवेंट (अगर आपकी थीम में कोई अन्य स्क्रिप्ट इसे सुन रही हो)
+
       document.dispatchEvent(new CustomEvent('custom:cart-updated'));
       document.dispatchEvent(new CustomEvent('cart:refresh'));
  
