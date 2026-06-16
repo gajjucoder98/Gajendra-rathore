@@ -55,20 +55,82 @@
       "settings": {
         "desktop_bg": "shopify://shop_images/Group_1000008197.png",
         "mobile_bg": "shopify://shop_images/Frame_1958.png",
-        "top_logo_text": "TISSO VISION",
-        "top_center_text": "Find the ideal gift for your loved ones.",
-        "top_button_text": "CHOOSE GIFT",
-        "top_button_link": "",
         "heading": "The Gift Guide",
         "description": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gift to delight your loved ones this holiday season.</p>",
         "button_text": "SHOP NOW",
         "button_link": "",
         "bottom_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
       }
+    },
+    "custom_product_card_NBaknp": {
+      "type": "custom-product-card",
+      "blocks": {
+        "product_card_akcEqt": {
+          "type": "product_card",
+          "settings": {
+            "product": "floral-white-top",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        },
+        "product_card_9DUWdh": {
+          "type": "product_card",
+          "settings": {
+            "product": "classic-varsity-top",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        },
+        "product_card_HGtEDJ": {
+          "type": "product_card",
+          "settings": {
+            "product": "dark-denim-top",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        },
+        "product_card_rPXfiU": {
+          "type": "product_card",
+          "settings": {
+            "product": "blue-silk-tuxedo",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        },
+        "product_card_PDKyyw": {
+          "type": "product_card",
+          "settings": {
+            "product": "black-leather-bag",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        },
+        "product_card_bJALkn": {
+          "type": "product_card",
+          "settings": {
+            "product": "chequered-red-shirt",
+            "custom_title": "",
+            "custom_description": ""
+          }
+        }
+      },
+      "block_order": [
+        "product_card_akcEqt",
+        "product_card_9DUWdh",
+        "product_card_HGtEDJ",
+        "product_card_rPXfiU",
+        "product_card_PDKyyw",
+        "product_card_bJALkn"
+      ],
+      "name": "Custom Product Cards",
+      "settings": {
+        "heading": "Tisso vison in the wild"
+      }
     }
   },
   "order": [
     "image_banner",
-    "custom_banner_73fUGX"
+    "custom_banner_73fUGX",
+    "custom_product_card_NBaknp"
   ]
 }
