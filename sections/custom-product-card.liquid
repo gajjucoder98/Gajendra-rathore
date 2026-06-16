@@ -51,7 +51,7 @@
                 {% if product.has_only_default_variant == false %}
                   <div class="variant-selection-container">
                     
-                    {% comment %} Color Swatches Block (Matching UI Image) {% endcomment %}
+                    {% comment %} Color Swatches Block {% endcomment %}
                     <div class="variant-option-group">
                       <label class="variant-label">Color</label>
                       <div class="color-swatch-wrapper">
@@ -108,7 +108,8 @@
                           "id": {{ variant.id }},
                           "color": {{ variant.option1 | json }},
                           "size": {{ variant.option2 | json }},
-                          "price": {{ variant.price | money | json }}
+                          "price": {{ variant.price | money | json }},
+                          "available": {{ variant.available | json }}
                         }{% unless forloop.last %},{% endunless %}
                       {% endfor %}
                     ]
@@ -120,7 +121,8 @@
                         "id": {{ product.selected_or_first_available_variant.id }},
                         "color": "",
                         "size": "",
-                        "price": {{ product.price | money | json }}
+                        "price": {{ product.price | money | json }},
+                        "available": {{ product.selected_or_first_available_variant.available | json }}
                       }
                     ]
                   </script>
@@ -144,151 +146,187 @@
 </section>
  
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  function normalize(str) {
+    return (str || '').trim().toLowerCase();
+  }
+
+  function getVariants(card) {
+    const el = card.querySelector('.variants-data');
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+  }
+
   function getSelectedColor(card) {
-    const checkedRadio = card.querySelector('.color-swatch-input:checked');
-    return checkedRadio ? checkedRadio.value : '';
+    const checked = card.querySelector('.color-swatch-input:checked');
+    return checked ? checked.value : '';
   }
 
-  function updateVariantPrice(card) {
-    const sizeSelect = card.querySelector('.size-select');
-    const variantsDataEl = card.querySelector('.variants-data');
+  function getSelectedSize(card) {
+    const select = card.querySelector('.size-select');
+    return select ? select.value : '';
+  }
+
+  function findVariant(variants, color, size) {
+    // Both options present → match both
+    if (color && size) {
+      return variants.find(
+        v => normalize(v.color) === normalize(color) &&
+             normalize(v.size)  === normalize(size)
+      ) || null;
+    }
+    // Size only (no color options)
+    if (size) {
+      return variants.find(v => normalize(v.size) === normalize(size)) || null;
+    }
+    // No options at all (default variant)
+    return variants[0] || null;
+  }
+
+  // ─── Price update ────────────────────────────────────────────────────────────
+
+  function updatePrice(card) {
     const priceDisplay = card.querySelector('.js-product-price');
- 
-    if (!variantsDataEl || !priceDisplay || !sizeSelect) return;
- 
-    const variants = JSON.parse(variantsDataEl.textContent);
-    const selectedColor = getSelectedColor(card);
-    const selectedSize = sizeSelect.value;
- 
-    if(!selectedSize) return;
+    if (!priceDisplay) return;
 
-    const matchedVariant = variants.find(
-      (variant) => variant.color === selectedColor && variant.size === selectedSize
-    );
- 
-    if (matchedVariant) {
-      priceDisplay.textContent = matchedVariant.price;
+    const variants     = getVariants(card);
+    const color        = getSelectedColor(card);
+    const size         = getSelectedSize(card);
+
+    // Don't update until size is chosen (avoids showing wrong price)
+    if (card.querySelector('.size-select') && !size) return;
+
+    const matched = findVariant(variants, color, size);
+    if (matched) priceDisplay.textContent = matched.price;
+  }
+
+  // ─── Cart count update ───────────────────────────────────────────────────────
+
+  async function refreshCartCount() {
+    try {
+      const res  = await fetch('/cart.js');
+      const cart = await res.json();
+      const count = cart.item_count;
+
+      document.querySelectorAll('.cart-count-bubble, #cart-icon-bubble, .cart-link__count').forEach(bubble => {
+        // Show/hide bubble
+        if (count > 0) {
+          bubble.removeAttribute('hidden');
+          bubble.classList.remove('hidden');
+        } else {
+          bubble.setAttribute('hidden', '');
+        }
+        // Update inner count span (Dawn theme pattern)
+        const spans = bubble.querySelectorAll('span[aria-hidden="true"], span:not(.visually-hidden)');
+        spans.forEach(span => { span.textContent = count; });
+      });
+
+      // Dispatch standard Shopify events so header sections re-render
+      document.dispatchEvent(new CustomEvent('cart:refresh'));
+      document.dispatchEvent(new CustomEvent('custom:cart-updated'));
+
+      // Dawn / Online Store 2.0 section rendering
+      if (window.Shopify && window.Shopify.sections) {
+        window.Shopify.sections.load('#cart-icon-bubble').catch(() => {});
+      }
+    } catch (e) {
+      console.warn('[ProductCards] Cart count refresh failed:', e);
     }
   }
- 
-  // Change events handles both radios and select changes
-  document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('color-swatch-input') || e.target.classList.contains('size-select')) {
-      const card = e.target.closest('.product-card');
-      updateVariantPrice(card);
+
+  // ─── Add to cart ─────────────────────────────────────────────────────────────
+
+  async function addToCart(variantId, quantity) {
+    const res = await fetch('/cart/add.js', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ id: variantId, quantity: quantity || 1 }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.description || 'Add to cart failed');
     }
-  });
- 
+    return res.json();
+  }
+
+  // ─── Click handler ───────────────────────────────────────────────────────────
+
   document.addEventListener('click', async function (e) {
     const button = e.target.closest('.custom-add-to-cart');
-    if (!button) return;
- 
-    const card = button.closest('.product-card');
-    let variantId = null;
-    let selectedColor = '';
-    let selectedSize = '';
- 
-    const sizeSelect = card.querySelector('.size-select');
-    const variantsDataEl = card.querySelector('.variants-data');
- 
-    if (variantsDataEl) {
-      const variants = JSON.parse(variantsDataEl.textContent);
-      
-      // Validation Check if variant sizes exist
-      if (sizeSelect) {
-        selectedColor = getSelectedColor(card);
-        selectedSize = sizeSelect.value;
+    if (!button || button.disabled) return;
 
-        if (!selectedSize) {
-          alert('Please select a size first!');
-          return;
-        }
- 
-        const matchedVariant = variants.find(
-          (variant) => variant.color.trim().toLowerCase() === selectedColor.trim().toLowerCase() && 
-                       variant.size.trim().toLowerCase() === selectedSize.trim().toLowerCase()
-        );
- 
-        if (matchedVariant) {
-          variantId = matchedVariant.id;
-        }
-      } else {
-        variantId = variants[0].id;
-      }
-    }
- 
-    if (!variantId) {
-      alert('This combination is not available. Please select another one.');
+    const card     = button.closest('.product-card');
+    const variants = getVariants(card);
+    if (!variants.length) return;
+
+    const hasSizeSelect  = !!card.querySelector('.size-select');
+    const hasColorRadios = !!card.querySelector('.color-swatch-input');
+
+    const selectedColor = hasColorRadios ? getSelectedColor(card) : '';
+    const selectedSize  = hasSizeSelect  ? getSelectedSize(card)  : '';
+
+    // Validate size selection
+    if (hasSizeSelect && !selectedSize) {
+      alert('Please select a size first!');
       return;
     }
- 
+
+    const matched = findVariant(variants, selectedColor, selectedSize);
+
+    if (!matched) {
+      alert('This combination is not available. Please select another option.');
+      return;
+    }
+
+    if (!matched.available) {
+      alert('Sorry, this variant is currently out of stock.');
+      return;
+    }
+
+    // UI: loading state
     button.disabled = true;
-    const originalText = button.innerHTML;
+    const originalHTML = button.innerHTML;
     button.innerHTML = '<span>ADDING...</span>';
- 
+
     try {
-      // Main product add
-      const response = await fetch('/cart/add.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: variantId, quantity: 1 }),
-      });
- 
-      if (!response.ok) throw new Error('Add to cart failed');
-      const data = await response.json();
- 
-      // Fixed Free Product Logic (Triggers precisely on Black + M)
+      await addToCart(matched.id, 1);
+
+      // Free product logic — triggers when Black + M selected on any product
       const FREE_VARIANT_ID = 8565446934713;
-      if (selectedColor.trim().toLowerCase() === 'black' && selectedSize.trim().toLowerCase() === 'm') {
-        await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: FREE_VARIANT_ID, quantity: 1 }),
-        });
+      if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
+        await addToCart(FREE_VARIANT_ID, 1);
       }
- 
+
       button.innerHTML = '<span>ADDED ✓</span>';
- 
-      if (window.sections && window.sections.renderBySectionId) {
-        window.sections.renderBySectionId('cart-icon-bubble');
-      }
-     
-      if (window.Shopify && window.Shopify.pubsub) {
-        window.Shopify.pubsub.publish('cart-updated', {});
-      }
- 
-      const cartRes = await fetch('/cart.js');
-      const cartData = await cartRes.json();
-     
-      const cartBubbles = document.querySelectorAll('.cart-count-bubble, #cart-icon-bubble, .cart-link__count');
-      cartBubbles.forEach(bubble => {
-        if (cartData.item_count > 0) {
-          bubble.style.display = 'block';
-          bubble.classList.remove('hidden');
-          const countSpan = bubble.querySelector('span:not(.visually-hidden)') || bubble;
-          if (countSpan) countSpan.textContent = cartData.item_count;
-        }
-      });
- 
-      document.dispatchEvent(new CustomEvent('custom:cart-updated'));
-      document.dispatchEvent(new CustomEvent('cart:refresh'));
- 
+      await refreshCartCount();
+
+    } catch (err) {
+      console.error('[ProductCards] Add to cart error:', err);
+      button.innerHTML = '<span>ERROR — TRY AGAIN</span>';
+
+    } finally {
       setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-      }, 1500);
- 
-    } catch (error) {
-      console.error(error);
-      button.innerHTML = '<span>ERROR</span>';
-      setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-      }, 1500);
+        button.innerHTML = originalHTML;
+        button.disabled  = false;
+      }, 1600);
     }
   });
+
+  // ─── Variant change → price update ──────────────────────────────────────────
+
+  document.addEventListener('change', function (e) {
+    if (
+      e.target.classList.contains('color-swatch-input') ||
+      e.target.classList.contains('size-select')
+    ) {
+      const card = e.target.closest('.product-card');
+      if (card) updatePrice(card);
+    }
+  });
+
 });
 </script>
  
@@ -349,7 +387,6 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size:13px;
   }
 
-  /* Updated Variant Swatch Styling as per Image Layout */
   .variant-selection-container {
     text-align: left;
     margin-bottom: 24px;
@@ -402,7 +439,6 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: bold;
   }
   
-  /* Dropdown UI container matching Image */
   .size-dropdown-wrapper {
     position: relative;
     width: 100%;
@@ -434,11 +470,10 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
   }
 
-  /* Add to Cart button layout matching image */
   .product-btn {
     width: 100%;
     padding: 16px 24px;
-    border: none;
+    border: 1px solid #ffffff;
     background: #000000;
     color: #ffffff;
     font-size: 16px;
@@ -450,14 +485,17 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: center;
     gap: 12px;
     transition: all 0.3s ease;
-    border: 1px solid #ffffff;
+  }
+  .product-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
   .btn-arrow {
     font-size: 20px;
     line-height: 1;
     transition: transform 0.2s;
   }
-  .product-btn:hover .btn-arrow {
+  .product-btn:hover:not(:disabled) .btn-arrow {
     transform: translateX(4px);
   }
 
