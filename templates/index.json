@@ -53,13 +53,10 @@
       "type": "custom-banner",
       "name": "Gift Guide Banner",
       "settings": {
-        "desktop_bg": "shopify://shop_images/Group_1000008197.png",
-        "mobile_bg": "shopify://shop_images/Frame_1958.png",
-        "heading": "The Gift Guide",
-        "description": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gift to delight your loved ones this holiday season.</p>",
-        "button_text": "SHOP NOW",
-        "button_link": "",
-        "bottom_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+        "brand_image": "shopify://shop_images/Group_1000007858.png",
+        "message_text": "Get started with your \"Mi Solo\" kit",
+        "btn_text": "CHOOSE GIFT",
+        "btn_link": ""
       }
     },
     "custom_product_card_NBaknp": {
