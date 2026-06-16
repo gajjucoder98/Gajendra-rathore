@@ -41,13 +41,31 @@ document.addEventListener('DOMContentLoaded', function() {
   if (toggleBtn) {
     toggleBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      wrapper.classList.toggle('is-active');
+      
+      if (wrapper.classList.contains('is-active')) {
+        // Menu close ho rha h: .is-closing lagao reverse animation ke liye
+        wrapper.classList.remove('is-active');
+        wrapper.classList.add('is-closing');
+        
+        // Animation khatam hote hi closing class hta do
+        setTimeout(() => {
+          wrapper.classList.remove('is-closing');
+        }, 650);
+      } else {
+        // Menu open ho rha h
+        wrapper.classList.remove('is-closing');
+        wrapper.classList.add('is-active');
+      }
     });
   }
 
   document.addEventListener('click', function(e) {
-    if (!wrapper.contains(e.target)) {
+    if (!wrapper.contains(e.target) && wrapper.classList.contains('is-active')) {
       wrapper.classList.remove('is-active');
+      wrapper.classList.add('is-closing');
+      setTimeout(() => {
+        wrapper.classList.remove('is-closing');
+      }, 650);
     }
   });
 });
@@ -88,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block;
     object-fit: contain;
   }
-  /* Desktop par dusra layer hamesha hidden */
   .overlay-layer {
     display: none !important;
   }
@@ -170,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
     .is-active .hamburger-icon span:nth-child(2) { opacity: 0; }
     .is-active .hamburger-icon span:nth-child(3) { top: 6px; transform: rotate(-45deg); }
 
-    /* Centered Mobile Logo Wrapper */
     .bar-brand {
       position: absolute;
       left: 50%;
@@ -185,45 +201,57 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
     }
 
-    /* 
-      CLOSE STATE EFFECT (Left-to-Right Return Transition)
-      Jab menu active se hatt jayega, toh ye transitions reverse hokar wapas center aayengi.
-    */
+    /* Standard Default Positions */
     .base-layer {
       position: relative;
       opacity: 1;
-      transform: translateX(0); /* Center par return */
+      transform: translateX(0);
       transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
     .overlay-layer {
       display: block !important;
       position: absolute;
-      opacity: 0; /* Baad me simple look ke liye fade out */
-      transform: translateX(6px); /* Right ki taraf travel out */
+      opacity: 0;
+      transform: translateX(6px);
       pointer-events: none;
-      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease;
+      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* ========================================== */
-    /* ACTIVE STATE (Right-to-Left Slide Shift)   */
+    /* OPEN ANIMATION STATE (Right to Left)       */
     /* ========================================== */
     .is-active .base-layer {
-      transform: translateX(-4px); /* Smoothly khiska left */
+      transform: translateX(-4px);
     }
     
     .is-active .overlay-layer {
-      opacity: 0.4;                
-      transform: translateX(-4px); /* Right se left swipe loop overlay */
-      
-      /* Animation loop end frame me layer clear standard maintain rakhegi */
-      animation: clearOverlayOnActive 0.68s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      transform: translateX(-4px);
+      animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
     @keyframes clearOverlayOnActive {
       0% { opacity: 0.4; }
       75% { opacity: 0.15; }
-      100% { opacity: 0; } /* End me simple clean visual */
+      100% { opacity: 0; }
+    }
+
+    /* ========================================== */
+    /* CLOSE ANIMATION STATE (Left to Right Mirror)*/
+    /* ========================================== */
+    .is-closing .base-layer {
+      transform: translateX(0); /* Base layer smoothly left to right center aayi */
+    }
+
+    .is-closing .overlay-layer {
+      transform: translateX(6px); /* Overlay clone wapas right side shift hua */
+      animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes clearOverlayOnClosing {
+      0% { opacity: 0; transform: translateX(-4px); }
+      30% { opacity: 0.3; }
+      100% { opacity: 0; transform: translateX(6px); }
     }
 
     /* Dropdown Overlay Panel */
