@@ -1,7 +1,6 @@
 <div class="tisso-gift-bar" id="gift-bar-{{ section.id }}">
   <div class="bar-container">
     
-    <!-- Mobile-Only Hamburger Toggle (Hidden on Desktop) -->
     <button type="button" class="bar-toggle" aria-label="Toggle Navigation">
       <div class="hamburger-icon">
         <span></span>
@@ -10,7 +9,6 @@
       </div>
     </button>
 
-    <!-- Logo Section (Left on Desktop, Centered on Mobile) -->
     <div class="bar-brand">
       {% if section.settings.brand_image != blank %}
         <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element">
@@ -19,7 +17,6 @@
       {% endif %}
     </div>
 
-    <!-- Content Panel (Inline row on Desktop, Absolute Overlay Dropdown on Mobile) -->
     <div class="bar-overlay-panel">
       <div class="panel-inner">
         <p class="bar-message">{{ section.settings.message_text }}</p>
@@ -57,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
   /* ========================================== */
-  /* DESKTOP CORE STYLES (Image_de6765.png Flow) */
+  /* DESKTOP CORE STYLES                        */
   /* ========================================== */
   .tisso-gift-bar {
     background-color: #f6f6f6;
@@ -76,17 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     justify-content: space-between;
   }
-
-  /* Desktop layout explicitly doesn't use toggles */
   .bar-toggle {
-    display: none; /* Clear desktop view */
+    display: none;
   }
-
   .bar-brand {
     display: flex;
     align-items: center;
-    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease;
-    will-change: transform, filter;
   }
   .brand-img-element {
     max-height: 28px;
@@ -94,8 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block;
     object-fit: contain;
   }
-
-  /* Flat Inline Layout for Desktop */
   .bar-overlay-panel {
     display: flex;
     align-items: center;
@@ -136,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .bar-btn:hover .arrow-icon { transform: translateX(3px); }
 
   /* ========================================== */
-  /* MOBILE BREAKPOINT TARGET (Dropdown & Blur) */
+  /* MOBILE BREAKPOINT TARGET                   */
   /* ========================================== */
   @media screen and (max-width: 989px) {
     .bar-container {
@@ -144,8 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
       padding: 0 20px;
       position: relative;
     }
-
-    /* Activate Toggler Control UI */
     .bar-toggle {
       display: flex;
       background: none;
@@ -171,12 +159,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .hamburger-icon span:nth-child(2) { top: 6px; }
     .hamburger-icon span:nth-child(3) { top: 12px; }
 
-    /* Cross (X) Vector Matrix */
+    /* Cross (X) */
     .is-active .hamburger-icon span:nth-child(1) { top: 6px; transform: rotate(45deg); }
     .is-active .hamburger-icon span:nth-child(2) { opacity: 0; }
     .is-active .hamburger-icon span:nth-child(3) { top: 6px; transform: rotate(-45deg); }
 
-    /* Center Logo configuration on Mobile devices */
+    /* Centered Mobile Logo with Default Close Animation Trigger */
     .bar-brand {
       position: absolute;
       left: 50%;
@@ -184,15 +172,47 @@ document.addEventListener('DOMContentLoaded', function() {
       transform: translate(-50%, -50%);
       pointer-events: none;
       z-index: 10000;
+      animation: logoToCenter 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    /* 1px-2px Shift with Soft Motion Blur Illusion */
+    /* Active State Trigger (Shift to Left with Mid-Way Blur) */
     .is-active .bar-brand {
-      transform: translate(calc(-50% - 2px), -50%); 
-      filter: blur(0.8px);
+      animation: logoToLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    /* Dropdown UI Block Overlap Structure */
+    /* Keyframes for Shift-Left Motion Blur Illusion */
+    @keyframes logoToLeft {
+      0% {
+        transform: translate(-50%, -50%);
+        filter: blur(0px);
+      }
+      50% {
+        transform: translate(-51.5%, -50%);
+        filter: blur(1.2px); /* Beech raste me halka blurish replacement illusion */
+      }
+      100% {
+        transform: translate(calc(-50% - 3px), -50%);
+        filter: blur(0px); /* Rukte hi wapas ekdam sharp aur clean */
+      }
+    }
+
+    /* Keyframes for Shift-Back to Center Matrix */
+    @keyframes logoToCenter {
+      0% {
+        transform: translate(calc(-50% - 3px), -50%);
+        filter: blur(0px);
+      }
+      50% {
+        transform: translate(-51.5%, -50%);
+        filter: blur(1.2px);
+      }
+      100% {
+        transform: translate(-50%, -50%);
+        filter: blur(0px);
+      }
+    }
+
+    /* Overlay Panel Dropdown */
     .bar-overlay-panel {
       position: absolute;
       top: 100%;
@@ -202,8 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
       border-bottom: 1px solid #e2e2e2;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
       display: block;
-      
-      /* Dropdown structural animations */
       transform: translateY(-15px);
       opacity: 0;
       visibility: hidden;
