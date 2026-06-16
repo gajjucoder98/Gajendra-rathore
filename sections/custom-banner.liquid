@@ -10,9 +10,13 @@
       </div>
     </button>
 
-    <!-- Centered Brand Logo/Text -->
+    <!-- Centered Brand Logo IMAGE with Illusion Animation -->
     <div class="bar-brand">
-      {{ section.settings.brand_text }}
+      {% if section.settings.brand_image != blank %}
+        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element">
+      {% else %}
+        <span style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">UPLOAD LOGO</span>
+      {% endif %}
     </div>
 
     <!-- Dropdown Content Panel (Desktop Hidden Left/Right, Mobile Absolute Overlay) -->
@@ -112,17 +116,31 @@ document.addEventListener('DOMContentLoaded', function() {
     transform: rotate(-45deg);
   }
 
-  /* Typography Design Branding */
+  /* Logo Image Wrapper & Illusion Animation Layout */
   .bar-brand {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #000000;
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    /* Default Centered State */
+    transform: translate(-50%, -50%);
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Smooth shift effect transition */
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* Jab click ho to right se left shift ka subtle illusion create kare */
+  .is-active .bar-brand {
+    transform: translate(-52%, -50%);
+  }
+
+  .brand-img-element {
+    max-height: 32px; /* Height aap desktop/mobile mockup ke hisab se toggle kar sakte hain */
+    width: auto;
+    display: block;
+    object-fit: contain;
   }
 
   /* Overlay Dropdown Setup (Sliding Layout From Top) */
@@ -188,18 +206,13 @@ document.addEventListener('DOMContentLoaded', function() {
   .bar-btn:hover .arrow-icon {
     transform: translateX(3px);
   }
-
-  /* Responsive Adjustments if required on extra large viewports */
-  @media screen and (min-width: 990px) {
-    /* Desktop toggle interface configurations optionally handled here */
-  }
 </style>
 
 {% schema %}
 {
   "name": "Tisso Gift Header Bar",
   "settings": [
-    { "type": "text", "id": "brand_text", "label": "Brand Name", "default": "TISSO VISON" },
+    { "type": "image_picker", "id": "brand_image", "label": "Select Logo Image" },
     { "type": "text", "id": "message_text", "label": "Message Text", "default": "Get started with your \"Mi Solo\" kit" },
     { "type": "text", "id": "btn_text", "label": "Button Label", "default": "CHOOSE GIFT" },
     { "type": "url", "id": "btn_link", "label": "Button Link" }
