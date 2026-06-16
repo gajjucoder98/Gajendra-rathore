@@ -56,7 +56,14 @@
         "brand_image": "shopify://shop_images/Group_1000007858.png",
         "message_text": "Get started with your \"Mi Solo\" kit",
         "btn_text": "CHOOSE GIFT",
-        "btn_link": ""
+        "btn_link": "",
+        "desktop_bg": "shopify://shop_images/Group_1000008197.png",
+        "mobile_bg": "shopify://shop_images/Frame_1958.png",
+        "heading": "The Gift Guide",
+        "description": "<p>Discover Joy: Your Ultimate Holiday Gift Destination.</p>",
+        "button_text": "SHOP NOW",
+        "button_link": "",
+        "bottom_text": "SUSTAINABLE, ETHICALLY MADE ACTIVEWEAR"
       }
     },
     "custom_product_card_NBaknp": {
