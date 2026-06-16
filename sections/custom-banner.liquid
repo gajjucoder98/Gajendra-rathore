@@ -1,21 +1,50 @@
 <div class="tisso-gift-bar" id="gift-bar-{{ section.id }}">
   <div class="bar-container">
-    <div class="bar-brand">{{ section.settings.brand_text }}</div>
-    <div class="bar-msg">{{ section.settings.message_text }}</div>
-    <div class="bar-action">
-      <a href="{{ section.settings.btn_link }}" class="gift-yellow-btn">
-        {{ section.settings.btn_text }} <span>→</span>
-      </a>
+    {% comment %} Left/Brand Area with Hamburger for Mobile {% endcomment %}
+    <div class="bar-brand-wrapper">
+      <button type="button" class="bar-menu-toggle" aria-label="Toggle menu">
+        <span class="icon-hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+      <div class="bar-brand">{{ section.settings.brand_text }}</div>
+    </div>
+
+    {% comment %} Desktop Content / Mobile Slide-down Panel {% endcomment %}
+    <div class="bar-content-panel">
+      <div class="bar-msg">{{ section.settings.message_text }}</div>
+      <div class="bar-action">
+        <a href="{{ section.settings.btn_link }}" class="gift-yellow-btn">
+          {{ section.settings.btn_text }} <span>→</span>
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const giftBar = document.getElementById('gift-bar-{{ section.id }}');
+  const toggleBtn = giftBar.querySelector('.bar-menu-toggle');
+  
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      giftBar.classList.toggle('menu-open');
+    });
+  }
+});
+</script>
+
 <style>
   .tisso-gift-bar {
     background: #f3f3f3;
-    padding: 12px 20px;
+    padding: 14px 40px;
     border-bottom: 1px solid #e5e5e5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    position: relative;
+    z-index: 999;
   }
   .bar-container {
     max-width: 1400px;
@@ -23,58 +52,144 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+  .bar-brand-wrapper {
+    display: flex;
+    align-items: center;
     gap: 15px;
+  }
+  .bar-menu-toggle {
+    display: none; /* Desktop par hidden */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
   }
   .bar-brand {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 20px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: #000;
+  }
+  .bar-content-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex: 1;
+    margin-left: 40px;
   }
   .bar-msg {
-    font-size: 13px;
+    font-size: 14px;
     color: #333;
     text-align: center;
-    flex: 2;
-  }
-  .bar-action {
-    text-align: right;
     flex: 1;
   }
   .gift-yellow-btn {
     background: #fff700;
     color: #000;
-    padding: 10px 22px;
-    font-size: 12px;
+    padding: 12px 26px;
+    font-size: 13px;
     font-weight: 700;
     text-decoration: none;
     letter-spacing: 0.5px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-transform: uppercase;
-    transition: opacity 0.2s;
   }
-  .gift-yellow-btn:hover { opacity: 0.9; }
 
-  /* Mobile Clean Responsive Layout */
+  /* Hamburger Bars Styling & Animation CSS */
+  .icon-hamburger {
+    display: block;
+    width: 18px;
+    height: 14px;
+    position: relative;
+  }
+  .icon-hamburger span {
+    display: block;
+    position: absolute;
+    height: 2px;
+    width: 100%;
+    background: #000;
+    transition: transform 0.25s ease, opacity 0.25s ease, top 0.25s ease;
+  }
+  .icon-hamburger span:nth-child(1) { top: 0; }
+  .icon-hamburger span:nth-child(2) { top: 6px; }
+  .icon-hamburger span:nth-child(3) { top: 12px; }
+
+  /* Open State (Cross Icon) Transformation */
+  .menu-open .icon-hamburger span:nth-child(1) {
+    top: 6px;
+    transform: rotate(45deg);
+  }
+  .menu-open .icon-hamburger span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-open .icon-hamburger span:nth-child(3) {
+    top: 6px;
+    transform: rotate(-45deg);
+  }
+
+  /* Mobile Version Custom Target Layout */
   @media screen and (max-width: 768px) {
-    .bar-container {
-      flex-direction: column;
-      gap: 10px;
-      text-align: center;
+    .tisso-gift-bar {
+      padding: 15px 20px;
     }
-    .bar-brand, .bar-msg, .bar-action {
-      flex: none;
+    .bar-container {
+      justify-content: flex-start;
+      position: relative;
+    }
+    .bar-brand-wrapper {
       width: 100%;
-      text-align: center;
+      justify-content: flex-start;
+    }
+    .bar-menu-toggle {
+      display: block; /* Mobile UI toggler activation */
+    }
+    .bar-brand {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Dropdown Panel sliding layout from top */
+    .bar-content-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #f3f3f3;
+      flex-direction: column;
+      margin-left: 0;
+      padding: 20px;
+      gap: 15px;
+      border-top: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e5e5e5;
+      box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+      
+      /* Hidden by default, slides down gracefully */
+      transform: translateY(-20px);
+      opacity: 0;
+      visibility: hidden;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      z-index: 1000;
+    }
+    
+    /* Toggle slide behavior active standard */
+    .menu-open .bar-content-panel {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+    .bar-msg {
+      font-size: 15px;
     }
     .gift-yellow-btn {
       width: 100%;
       justify-content: center;
-      padding: 12px;
+      box-sizing: border-box;
     }
   }
 </style>
@@ -84,7 +199,7 @@
   "name": "Tisso Gift Header Bar",
   "settings": [
     { "type": "text", "id": "brand_text", "label": "Brand Name", "default": "TISSO VISON" },
-    { "type": "text", "id": "message_text", "label": "Message", "default": "Find the ideal gift for your loved ones." },
+    { "type": "text", "id": "message_text", "label": "Message", "default": "Get started with your \"Mi Solo\" kit" },
     { "type": "text", "id": "btn_text", "label": "Button Label", "default": "CHOOSE GIFT" },
     { "type": "url", "id": "btn_link", "label": "Button Link" }
   ],
