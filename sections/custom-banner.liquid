@@ -1,6 +1,7 @@
 <div class="tisso-gift-bar" id="gift-bar-{{ section.id }}">
   <div class="bar-container">
     
+    <!-- Mobile-Only Hamburger Toggle -->
     <button type="button" class="bar-toggle" aria-label="Toggle Navigation">
       <div class="hamburger-icon">
         <span></span>
@@ -9,15 +10,16 @@
       </div>
     </button>
 
+    <!-- Logo Section with Clean Right-to-Left Shift Animation -->
     <div class="bar-brand">
       {% if section.settings.brand_image != blank %}
-        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element base-layer">
-        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element overlay-layer">
+        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element">
       {% else %}
         <span style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">UPLOAD LOGO</span>
       {% endif %}
     </div>
 
+    <!-- Content Panel -->
     <div class="bar-overlay-panel">
       <div class="panel-inner">
         <p class="bar-message">{{ section.settings.message_text }}</p>
@@ -80,17 +82,12 @@ document.addEventListener('DOMContentLoaded', function() {
   .bar-brand {
     display: flex;
     align-items: center;
-    position: relative;
   }
   .brand-img-element {
     max-height: 28px;
     width: auto;
     display: block;
     object-fit: contain;
-  }
-  /* Desktop par dusra layer hidden rahega */
-  .overlay-layer {
-    display: none !important;
   }
   
   .bar-overlay-panel {
@@ -170,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .is-active .hamburger-icon span:nth-child(2) { opacity: 0; }
     .is-active .hamburger-icon span:nth-child(3) { top: 6px; transform: rotate(-45deg); }
 
-    /* Centered Mobile Logo Wrapper */
+    /* Centered Mobile Logo Container */
     .bar-brand {
       position: absolute;
       left: 50%;
@@ -178,45 +175,42 @@ document.addEventListener('DOMContentLoaded', function() {
       transform: translate(-50%, -50%);
       pointer-events: none;
       z-index: 10000;
-      width: auto;
-      height: 28px;
     }
 
-    /* Mobile Double-Layer Positions */
+    /* Target Image for Clean Animation Performance */
     .brand-img-element {
       max-height: 28px;
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
-    }
-    
-    /* Base layer starts clean at center */
-    .base-layer {
-      position: relative;
-      opacity: 1;
-      transform: translateX(0);
-    }
-    
-    /* Overlay layer exactly over base layer, invisible at first */
-    .overlay-layer {
-      display: block !important;
-      position: absolute;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      transform: translateX(4px); /* Halka sa right offset */
-      pointer-events: none;
+      /* Default state jab panel band ho (animation to center) */
+      animation: shiftToCenter 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      will-change: transform;
     }
 
-    /* ========================================== */
-    /* ACTIVE STATE (Logo Overlap Shift Illusion) */
-    /* ========================================== */
-    .is-active .base-layer {
-      transform: translateX(-3px); /* Base logo khiska left */
-      opacity: 0.65;               /* Thoda light hua */
+    /* Active State (Trigger animation to Left) */
+    .is-active .brand-img-element {
+      animation: shiftToLeft 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
-    
-    .is-active .overlay-layer {
-      opacity: 0.85;               /* Doosra logo solid hokar upar aaya */
-      transform: translateX(-1px); /* Left ki taraf swipe overlap */
+
+    /* Right to Left Slide (End state completely clean/simple) */
+    @keyframes shiftToLeft {
+      0% {
+        transform: translateX(0);
+      }
+      30% {
+        transform: translateX(3px); /* Halki si positioning illusion transition ke liye */
+      }
+      100% {
+        transform: translateX(-4px); /* Apni simple final left pos par aakar ruk gaya */
+      }
+    }
+
+    /* Smooth Slide Back to Original Center Position */
+    @keyframes shiftToCenter {
+      0% {
+        transform: translateX(-4px);
+      }
+      100% {
+        transform: translateX(0); /* Absolute center default simple state */
+      }
     }
 
     /* Overlay Panel Dropdown */
