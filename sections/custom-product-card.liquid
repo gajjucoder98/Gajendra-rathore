@@ -17,13 +17,6 @@
                 {{ product.featured_image | image_url: width: 800 | image_tag: loading: 'lazy' }}
               {% endif %}
             </div>
-
-            {% comment %} 
-              Yahan dynamically top aur left value block settings se pass ho rahi hai
-            {% endcomment %}
-            <div class="product-card__plus-icon" style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;">
-              <span class="plus-symbol">+</span>
-            </div>
  
             <div class="product-card__overlay">
               <div class="product-card__content">
@@ -117,6 +110,8 @@
  
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+ 
+
   function updateVariantPrice(card) {
     const colorSelect = card.querySelector('.color-select');
     const sizeSelect = card.querySelector('.size-select');
@@ -140,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
  
+
   document.addEventListener('change', function(e) {
     if (e.target.classList.contains('color-select') || e.target.classList.contains('size-select')) {
       const card = e.target.closest('.product-card');
@@ -147,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
  
+
   document.addEventListener('click', async function (e) {
     if (!e.target.classList.contains('custom-add-to-cart')) return;
  
@@ -200,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
  
       const FREE_VARIANT_ID = 8565446934713;
  
+      
       if (selectedColor.toLowerCase() === 'black' && selectedSize.toLowerCase() === 'm') {
         await fetch('/cart/add.js', {
           method: 'POST',
@@ -210,27 +208,35 @@ document.addEventListener('DOMContentLoaded', function() {
  
       button.textContent = 'Added ✓';
  
+     
       if (window.sections && window.sections.renderBySectionId) {
         window.sections.renderBySectionId('cart-icon-bubble');
       }
      
+      
       if (window.Shopify && window.Shopify.pubsub) {
         window.Shopify.pubsub.publish('cart-updated', {});
       }
  
+     
       const cartRes = await fetch('/cart.js');
       const cartData = await cartRes.json();
      
+      
       const cartBubbles = document.querySelectorAll('.cart-count-bubble, #cart-icon-bubble, .cart-link__count');
       cartBubbles.forEach(bubble => {
         if (cartData.item_count > 0) {
+         
           bubble.style.display = 'block';
           bubble.classList.remove('hidden');
+         
+         
           const countSpan = bubble.querySelector('span:not(.visually-hidden)') || bubble;
           if (countSpan) countSpan.textContent = cartData.item_count;
         }
       });
  
+
       document.dispatchEvent(new CustomEvent('custom:cart-updated'));
       document.dispatchEvent(new CustomEvent('cart:refresh'));
  
@@ -250,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+ 
  
 <style>
       .custom-product-cards {
@@ -353,35 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
       display: block;
       transition: transform .5s ease;
     }
-
-    /* Plus Icon Styles */
-    .product-card__plus-icon {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      width: 32px;
-      height: 32px;
-      background: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      z-index: 2;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .plus-symbol {
-      color: #000000;
-      font-size: 20px;
-      font-weight: bold;
-      line-height: 1;
-    }
-
-    /* Jab card hover hoga to plus icon chhup jayega taaki menu acche se dikhe */
-    .product-card:hover .product-card__plus-icon {
-      opacity: 0;
-    }
  
     .product-card__overlay {
       position: absolute;
@@ -398,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
       visibility: hidden;
  
       transition: all .35s ease;
-      z-index: 3;
     }
  
     .product-card:hover .product-card__overlay {
@@ -454,9 +431,6 @@ document.addEventListener('DOMContentLoaded', function() {
           rgba(0,0,0,.4)
         );
       }
-      .product-card__plus-icon {
-        display: none; /* Mobile par direct overlay slider open rahega */
-      }
     }
 </style>
  
@@ -495,30 +469,6 @@ document.addEventListener('DOMContentLoaded', function() {
           "type": "textarea",
           "id": "custom_description",
           "label": "Custom Description"
-        },
-        {
-          "type": "header",
-          "content": "Plus Icon Position"
-        },
-        {
-          "type": "range",
-          "id": "icon_top",
-          "min": 5,
-          "max": 95,
-          "step": 1,
-          "unit": "%",
-          "label": "Icon Position (Top)",
-          "default": 30
-        },
-        {
-          "type": "range",
-          "id": "icon_left",
-          "min": 5,
-          "max": 95,
-          "step": 1,
-          "unit": "%",
-          "label": "Icon Position (Left)",
-          "default": 65
         }
       ]
     }
