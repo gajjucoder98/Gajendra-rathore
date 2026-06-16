@@ -1,315 +1,149 @@
 <section
-  class="gift-guide-section-wrapper"
+  class="gift-guide-banner"
   style="
-    --desktop-bg: url('{{ section.settings.desktop_bg | image_url: width: 2500 }}');
-    --mobile-bg: url('{{ section.settings.mobile_bg | image_url: width: 1000 }}');
+    --desktop-bg:url('{{ section.settings.desktop_bg | image_url: width: 2500 }}');
+    --mobile-bg:url('{{ section.settings.mobile_bg | image_url: width: 1000 }}');
   "
 >
-  <div class="gift-guide-banner__topbar is-open" id="GiftGuideTopbar">
-    <button 
-      type="button" 
-      class="gift-guide-banner__menu-toggle" 
-      aria-label="Toggle Menu" 
-      onclick="document.getElementById('GiftGuideTopbar').classList.toggle('is-open')"
-    >
-      <svg class="icon icon-hamburger" viewBox="0 0 18 16" width="22" height="20">
-        <path d="M1 .5h16a.5.5 0 0 1 0 1H1a.5.5 0 0 1 0-1zm0 7h16a.5.5 0 0 1 0 1H1a.5.5 0 0 1 0-1zm0 7h16a.5.5 0 0 1 0 1H1a.5.5 0 0 1 0-1z" fill="currentColor"/>
-      </svg>
-      <svg class="icon icon-close" viewBox="0 0 18 18" width="20" height="20">
-        <path d="M1 1l16 16M17 1L1 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
+  <div class="gift-guide-banner__content ">
+  <div class="gift-banner-content-wraper">
+    {% if section.settings.heading != blank %}
+      <h2 class="gift-guide-banner__heading">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
 
-    <div class="gift-guide-banner__logo">
-      {{ section.settings.top_logo_text }}
-    </div>
-
-    <div class="gift-guide-banner__dropdown-content">
-      <div class="gift-guide-banner__center-text">
-        {{ section.settings.top_center_text }}
+    {% if section.settings.description != blank %}
+      <div class="gift-guide-banner__description">
+        {{ section.settings.description }}
       </div>
+    {% endif %}
+</div>
+    {% if section.settings.button_text != blank %}
+      <a
+        href="{{ section.settings.button_link }}"
+        class="gift-guide-banner__button"
+      >
+        {{ section.settings.button_text }}
+        <span>→</span>
+      </a>
+    {% endif %}
 
-      {% if section.settings.top_button_text != blank %}
-        <a href="{{ section.settings.top_button_link }}" class="gift-guide-banner__top-btn">
-          {{ section.settings.top_button_text }}
-          <span class="arrow">→</span>
-        </a>
-      {% endif %}
-    </div>
   </div>
 
-  <div class="gift-guide-banner">
-    <div class="gift-guide-banner__content">
-      {% if section.settings.heading != blank %}
-        <h2 class="gift-guide-banner__heading">
-          {{ section.settings.heading }}
-        </h2>
-      {% endif %}
-
-      {% if section.settings.description != blank %}
-        <div class="gift-guide-banner__description">
-          {{ section.settings.description }}
-        </div>
-      {% endif %}
-
-      {% if section.settings.button_text != blank %}
-        <a href="{{ section.settings.button_link }}" class="gift-guide-banner__button">
-          {{ section.settings.button_text }}
-          <span class="arrow">→</span>
-        </a>
-      {% endif %}
-    </div>
-
-    <div class="gift-guide-banner__bottom-strip">
-      {{ section.settings.bottom_text }}
-    </div>
+  <div class="gift-guide-banner__bottom-strip">
+    {{ section.settings.bottom_text }}
   </div>
 </section>
 
 <style>
-/* --- BASE WRAPPER --- */
-.gift-guide-section-wrapper {
-  position: relative;
-  width: 100%;
-  font-family: inherit;
-  overflow: hidden;
-}
-
-/* --- DESKTOP TOPBAR --- */
-.gift-guide-banner__topbar {
-  height: 64px;
-  background: #F5F5F5;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(0,0,0,.08);
-  position: relative;
-  z-index: 10;
-}
-
-.gift-guide-banner__menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: #000;
-}
-
-.gift-guide-banner__logo {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.gift-guide-banner__dropdown-content {
-  display: contents;
-}
-
-.gift-guide-banner__center-text {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-.gift-guide-banner__top-btn {
-  justify-self: end;
-  background: #f3e61f;
-  color: #000;
-  text-decoration: none;
-  padding: 9px 28px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: background 0.2s ease;
-}
-
-/* --- DESKTOP MAIN BANNER --- */
-.gift-guide-banner {
-  position: relative;
-  min-height: 820px;
-  background-image: var(--desktop-bg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  flex-direction: column;
+.gift-guide-banner{
+  position:relative;
+  min-height:820px;
+  background-image:var(--desktop-bg);
+  background-size:cover;
+  background-position:left;
+  background-repeat:no-repeat;
+  display:flex;
+  flex-direction:column;
 }
 
 .gift-guide-banner__content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  max-width: 600px;
-  align-items: flex-start;
-  padding: 0px 32px 60px 32px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    max-width: 600px;
+    align-items: flex-start;
+    padding: 0px 32px;
+    padding-bottom: 60px;
 }
 
-.gift-guide-banner__heading {
-  font-size: 70px;
-  line-height: 1;
-  font-weight: 500;
-  margin: 0 0 15px 0;
-  color: #000;
+.gift-guide-banner__heading{
+  font-size:70px;
+  line-height:1;
+  font-weight:500;
+  margin:0 0 15px;
 }
 
-.gift-guide-banner__description {
-  max-width: 500px;
-  font-size: 20px;
-  line-height: 1.3;
-  margin-bottom: 32px;
-  color: #000;
+.gift-guide-banner__description{
+  max-width:500px;
+  font-size:20px;
+  line-height:1.2;
+  margin-bottom:32px;
 }
 
 .gift-guide-banner__button {
-  width: max-content;
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-  padding: 11px 49px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-  font-size: 16px;
-  transition: opacity 0.2s ease;
+    width: max-content;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    padding: 11px 49px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 400;
+    font-size: 16px;
 }
 
-.gift-guide-banner__bottom-strip {
-  background: #F5F5F5;
-  text-align: center;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  border-top: 1px solid rgba(0,0,0,.05);
+.gift-guide-banner__bottom-strip{
+  background:#F5F5F5;
+  text-align:center;
+  padding:10px;
+  font-size:16px;
+  font-weight:400;
+  text-transform:uppercase;
+  letter-spacing:.08em;
 }
 
-/* --- MOBILE RESPONSIVE LAYOUT & ANIMATIONS --- */
-@media screen and (max-width: 749px) {
-  
-  /* Topbar Fluid Layout Animation */
-  .gift-guide-banner__topbar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    background: #ffffff;
-    padding: 16px 20px;
-    height: 55px; /* Collapsed height */
-    overflow: hidden;
-    gap: 0;
-    border-bottom: 1px solid rgba(0,0,0,.1);
-    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s ease;
-  }
 
-  /* When Topbar Open/Expanded State */
-  .gift-guide-banner__topbar.is-open {
-    height: 175px; /* Full dropdown auto calculated height */
-    padding-bottom: 20px;
-  }
+@media screen and (max-width: 749px){
 
-  /* Toggle Icon Trigger position fix */
-  .gift-guide-banner__menu-toggle {
-    display: block;
-    position: absolute;
-    left: 20px;
-    top: 16px;
-    z-index: 12;
-  }
-
-  .gift-guide-banner__menu-toggle .icon-close { display: none; }
-  .gift-guide-banner__topbar.is-open .icon-hamburger { display: none; }
-  .gift-guide-banner__topbar.is-open .icon-close { display: block; }
-
-  /* Logo text alignment scaling */
-  .gift-guide-banner__logo {
-    font-size: 22px;
-    margin-bottom: 0;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 11;
-  }
-
-  /* Smooth Slide Element Dropdown Layer */
-  .gift-guide-banner__dropdown-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    opacity: 0;
-    transform: translateY(-10px);
-    visibility: hidden;
-    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
-    margin-top: 15px;
-  }
-
-  .gift-guide-banner__topbar.is-open .gift-guide-banner__dropdown-content {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    transition-delay: 0.1s;
-  }
-
-  .gift-guide-banner__center-text {
-    font-size: 14px;
-    margin-bottom: 12px;
-    color: #333;
-  }
-
-  .gift-guide-banner__top-btn {
-    width: 90%;
-    max-width: 320px;
-    justify-content: center;
-    padding: 10px 20px;
-    font-size: 14px;
-    letter-spacing: 0.05em;
-  }
-
-  /* --- MOBILE MAIN BANNER --- */
-  .gift-guide-banner {
-    min-height: 580px;
+  .gift-guide-banner{
+    min-height: 620px; 
     background-image: var(--mobile-bg);
-    background-position: center center;
+    background-position: center bottom;
   }
 
-  .gift-guide-banner__content {
-    max-width: 100%;
-    align-items: center;
+  .gift-guide-banner__content{
+    padding: 40px 24px;
+    align-items: center;       
     text-align: center;
-    padding: 40px 20px;
-    justify-content: flex-start;
+    justify-content: space-between;
+    max-width: 100%;
   }
 
-  .gift-guide-banner__heading {
-    font-size: 38px;
-    margin-bottom: 12px;
-    margin-top: 10px;
+  .gift-guide-banner__heading{
+    font-size: 30px;           
+    line-height: 1.1;
+    margin: 25px 0 15px 0;
+    font-weight: 600;
   }
 
-  .gift-guide-banner__description {
-    font-size: 15px;
+  .gift-guide-banner__description{
+    font-size: 16px;
     line-height: 1.4;
-    margin-bottom: 24px;
-    padding: 0 15px;
+    margin-bottom: 25px;
+    max-width: 100%;
+    padding: 0 10px;
   }
 
   .gift-guide-banner__button {
-    width: 85%;
-    max-width: 280px;
-    justify-content: center;
-    padding: 12px 30px;
+    width: 80%;                 
+           max-width: 193px;
+        justify-content: center;
+        padding: 9px 30px;
     font-size: 15px;
+    letter-spacing: 0.05em;
   }
 
   .gift-guide-banner__bottom-strip {
-    font-size: 12px;
-    padding: 10px 15px;
-    letter-spacing: 0.05em;
+    font-size: 13px;            
+    padding: 12px 10px;
+    letter-spacing: 0.06em;
+     white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis
   }
 }
 </style>
@@ -327,29 +161,6 @@
       "type": "image_picker",
       "id": "mobile_bg",
       "label": "Mobile Background Image"
-    },
-    {
-      "type": "text",
-      "id": "top_logo_text",
-      "label": "Top Logo Text",
-      "default": "TISSO VISION"
-    },
-    {
-      "type": "text",
-      "id": "top_center_text",
-      "label": "Top Center Text",
-      "default": "Get started with your \"Mi Solo\" kit"
-    },
-    {
-      "type": "text",
-      "id": "top_button_text",
-      "label": "Top Button Text",
-      "default": "CHOOSE GIFT"
-    },
-    {
-      "type": "url",
-      "id": "top_button_link",
-      "label": "Top Button Link"
     },
     {
       "type": "text",
