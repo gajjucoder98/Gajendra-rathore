@@ -70,7 +70,9 @@
           "settings": {
             "product": "floral-white-top",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 14,
+            "icon_left": 65
           }
         },
         "product_card_9DUWdh": {
@@ -78,7 +80,9 @@
           "settings": {
             "product": "classic-varsity-top",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 30,
+            "icon_left": 65
           }
         },
         "product_card_HGtEDJ": {
@@ -86,7 +90,9 @@
           "settings": {
             "product": "dark-denim-top",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 30,
+            "icon_left": 65
           }
         },
         "product_card_rPXfiU": {
@@ -94,7 +100,9 @@
           "settings": {
             "product": "blue-silk-tuxedo",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 30,
+            "icon_left": 65
           }
         },
         "product_card_PDKyyw": {
@@ -102,7 +110,9 @@
           "settings": {
             "product": "black-leather-bag",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 30,
+            "icon_left": 65
           }
         },
         "product_card_bJALkn": {
@@ -110,7 +120,9 @@
           "settings": {
             "product": "chequered-red-shirt",
             "custom_title": "",
-            "custom_description": ""
+            "custom_description": "",
+            "icon_top": 30,
+            "icon_left": 65
           }
         }
       },
