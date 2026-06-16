@@ -1,6 +1,9 @@
+<!-- ============================================ -->
+<!-- TISSO GIFT HEADER BAR                        -->
+<!-- ============================================ -->
 <div class="tisso-gift-bar" id="gift-bar-{{ section.id }}">
   <div class="bar-container">
-    
+
     <button type="button" class="bar-toggle" aria-label="Toggle Navigation">
       <div class="hamburger-icon">
         <span></span>
@@ -20,9 +23,9 @@
 
     <div class="bar-overlay-panel">
       <div class="panel-inner">
-        <p class="bar-message">{{ section.settings.message_text }}</p>
-        <a href="{{ section.settings.btn_link }}" class="bar-btn">
-          {{ section.settings.btn_text }}
+        <p class="bar-message">{{ section.settings.bar_message_text }}</p>
+        <a href="{{ section.settings.bar_btn_link }}" class="bar-btn">
+          {{ section.settings.bar_btn_text }}
           <svg class="arrow-icon" viewBox="0 0 24 24" width="20" height="20">
             <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -33,26 +36,69 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- GIFT GUIDE BANNER                            -->
+<!-- ============================================ -->
+<section
+  class="gift-guide-banner"
+  style="
+    --desktop-bg: url('{{ section.settings.desktop_bg | image_url: width: 2500 }}');
+    --mobile-bg: url('{{ section.settings.mobile_bg | image_url: width: 1000 }}');
+    --banner-min-height-desktop: {{ section.settings.banner_min_height_desktop }}px;
+    --banner-min-height-mobile: {{ section.settings.banner_min_height_mobile }}px;
+    --heading-color: {{ section.settings.heading_color }};
+    --description-color: {{ section.settings.description_color }};
+    --banner-btn-bg: {{ section.settings.banner_btn_bg }};
+    --banner-btn-color: {{ section.settings.banner_btn_color }};
+    --strip-bg: {{ section.settings.strip_bg }};
+    --strip-color: {{ section.settings.strip_color }};
+  "
+>
+  <div class="gift-guide-banner__content">
+    <div class="gift-banner-content-wraper">
+      {% if section.settings.heading != blank %}
+        <h2 class="gift-guide-banner__heading">
+          {{ section.settings.heading }}
+        </h2>
+      {% endif %}
+
+      {% if section.settings.description != blank %}
+        <div class="gift-guide-banner__description">
+          {{ section.settings.description }}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.banner_btn_text != blank %}
+      <a href="{{ section.settings.banner_btn_link }}" class="gift-guide-banner__button">
+        {{ section.settings.banner_btn_text }}
+        <span>→</span>
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="gift-guide-banner__bottom-strip">
+    {{ section.settings.bottom_text }}
+  </div>
+</section>
+
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT                                   -->
+<!-- ============================================ -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const wrapper = document.getElementById('gift-bar-{{ section.id }}');
   const toggleBtn = wrapper.querySelector('.bar-toggle');
-  
+
   if (toggleBtn) {
     toggleBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      
       if (wrapper.classList.contains('is-active')) {
-        // Menu close ho rha h: .is-closing lagao reverse animation ke liye
         wrapper.classList.remove('is-active');
         wrapper.classList.add('is-closing');
-        
-        // Animation khatam hote hi closing class hta do
-        setTimeout(() => {
-          wrapper.classList.remove('is-closing');
-        }, 650);
+        setTimeout(() => { wrapper.classList.remove('is-closing'); }, 650);
       } else {
-        // Menu open ho rha h
         wrapper.classList.remove('is-closing');
         wrapper.classList.add('is-active');
       }
@@ -63,20 +109,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!wrapper.contains(e.target) && wrapper.classList.contains('is-active')) {
       wrapper.classList.remove('is-active');
       wrapper.classList.add('is-closing');
-      setTimeout(() => {
-        wrapper.classList.remove('is-closing');
-      }, 650);
+      setTimeout(() => { wrapper.classList.remove('is-closing'); }, 650);
     }
   });
 });
 </script>
 
+
+<!-- ============================================ -->
+<!-- STYLES                                       -->
+<!-- ============================================ -->
 <style>
-  /* ========================================== */
-  /* DESKTOP CORE STYLES                        */
-  /* ========================================== */
+
+  /* ------------------------------------------
+     HEADER BAR — DESKTOP
+  ------------------------------------------ */
   .tisso-gift-bar {
-    background-color: #f6f6f6;
+    background-color: {{ section.settings.bar_bg_color }};
     border-bottom: 1px solid #e2e2e2;
     position: relative;
     font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -85,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   .bar-container {
     max-width: 100%;
-    height: 75px;
+    height: {{ section.settings.bar_height }}px;
     margin: 0 auto;
     padding: 0 40px;
     display: flex;
@@ -101,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
     position: relative;
   }
   .brand-img-element {
-    max-height: 28px;
+    max-height: {{ section.settings.logo_height }}px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -109,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
   .overlay-layer {
     display: none !important;
   }
-  
   .bar-overlay-panel {
     display: flex;
     align-items: center;
@@ -125,14 +173,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   .bar-message {
     font-size: 14px;
-    color: #1c1c1c;
+    color: {{ section.settings.bar_text_color }};
     margin: 0;
     font-weight: 400;
     letter-spacing: 0.2px;
   }
   .bar-btn {
-    background-color: #ffff00;
-    color: #000000;
+    background-color: {{ section.settings.bar_btn_bg }};
+    color: {{ section.settings.bar_btn_color }};
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -149,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
   .arrow-icon { display: inline-block; transition: transform 0.15s ease; }
   .bar-btn:hover .arrow-icon { transform: translateX(3px); }
 
-  /* ========================================== */
-  /* MOBILE BREAKPOINT TARGET                   */
-  /* ========================================== */
+  /* ------------------------------------------
+     HEADER BAR — MOBILE
+  ------------------------------------------ */
   @media screen and (max-width: 989px) {
     .bar-container {
       height: 65px;
@@ -200,15 +248,12 @@ document.addEventListener('DOMContentLoaded', function() {
       align-items: center;
       justify-content: center;
     }
-
-    /* Standard Default Positions */
     .base-layer {
       position: relative;
       opacity: 1;
       transform: translateX(0);
       transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    
     .overlay-layer {
       display: block !important;
       position: absolute;
@@ -217,50 +262,34 @@ document.addEventListener('DOMContentLoaded', function() {
       pointer-events: none;
       transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
-
-    /* ========================================== */
-    /* OPEN ANIMATION STATE (Right to Left)       */
-    /* ========================================== */
-    .is-active .base-layer {
-      transform: translateX(-4px);
-    }
-    
+    .is-active .base-layer { transform: translateX(-4px); }
     .is-active .overlay-layer {
       transform: translateX(-4px);
       animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
-
     @keyframes clearOverlayOnActive {
       0% { opacity: 0.4; }
       75% { opacity: 0.15; }
       100% { opacity: 0; }
     }
-
-    /* ========================================== */
-    /* CLOSE ANIMATION STATE (Left to Right Mirror)*/
-    /* ========================================== */
-    .is-closing .base-layer {
-      transform: translateX(0); /* Base layer smoothly left to right center aayi */
-    }
-
+    .is-closing .base-layer { transform: translateX(0); }
     .is-closing .overlay-layer {
-      transform: translateX(6px); /* Overlay clone wapas right side shift hua */
+      transform: translateX(6px);
       animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
-
     @keyframes clearOverlayOnClosing {
       0% { opacity: 0; transform: translateX(-4px); }
       30% { opacity: 0.3; }
       100% { opacity: 0; transform: translateX(6px); }
     }
 
-    /* Dropdown Overlay Panel */
+    /* Mobile Dropdown Panel */
     .bar-overlay-panel {
       position: absolute;
       top: 100%;
       left: 0;
       width: 100%;
-      background-color: #f6f6f6;
+      background-color: {{ section.settings.bar_bg_color }};
       border-bottom: 1px solid #e2e2e2;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
       display: block;
@@ -282,29 +311,347 @@ document.addEventListener('DOMContentLoaded', function() {
       text-align: center;
       gap: 20px;
     }
-    .bar-message {
-      font-size: 16px;
-      text-align: center;
+    .bar-message { font-size: 16px; text-align: center; }
+    .bar-btn { width: 100%; box-sizing: border-box; padding: 14px 45px; }
+  }
+
+  /* ------------------------------------------
+     GIFT GUIDE BANNER — DESKTOP
+  ------------------------------------------ */
+  .gift-guide-banner {
+    position: relative;
+    min-height: var(--banner-min-height-desktop);
+    background-image: var(--desktop-bg);
+    background-size: cover;
+    {% comment %} background-position: {{ section.settings.bg_position }}; {% endcomment %}
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+  }
+  .gift-guide-banner__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    max-width: 600px;
+    align-items: flex-start;
+    padding: 0 32px;
+    padding-bottom: 60px;
+  }
+  .gift-guide-banner__heading {
+    font-size: {{ section.settings.heading_size }}px;
+    line-height: 1;
+    font-weight: 500;
+    margin: 0 0 15px;
+    color: var(--heading-color);
+  }
+  .gift-guide-banner__description {
+    max-width: 500px;
+    font-size: {{ section.settings.description_size }}px;
+    line-height: 1.2;
+    margin-bottom: 32px;
+    color: var(--description-color);
+  }
+  .gift-guide-banner__button {
+    width: max-content;
+    background: var(--banner-btn-bg);
+    color: var(--banner-btn-color);
+    text-decoration: none;
+    padding: 11px 49px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 400;
+    font-size: 16px;
+    transition: opacity 0.15s ease;
+  }
+  .gift-guide-banner__button:hover { opacity: 0.85; }
+  .gift-guide-banner__bottom-strip {
+    background: var(--strip-bg);
+    color: var(--strip-color);
+    text-align: center;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ------------------------------------------
+     GIFT GUIDE BANNER — MOBILE
+  ------------------------------------------ */
+  @media screen and (max-width: 749px) {
+    .gift-guide-banner {
+      min-height: var(--banner-min-height-mobile);
+      background-image: var(--mobile-bg);
+      background-position: center bottom;
     }
-    .bar-btn {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px 45px;
+    .gift-guide-banner__content {
+      padding: 40px 24px;
+      align-items: center;
+      text-align: center;
+      justify-content: space-between;
+      max-width: 100%;
+    }
+    .gift-guide-banner__heading {
+      font-size: 30px;
+      line-height: 1.1;
+      margin: 25px 0 15px 0;
+      font-weight: 600;
+    }
+    .gift-guide-banner__description {
+      font-size: 16px;
+      line-height: 1.4;
+      margin-bottom: 25px;
+      max-width: 100%;
+      padding: 0 10px;
+    }
+    .gift-guide-banner__button {
+      width: 80%;
+      max-width: 193px;
+      justify-content: center;
+      padding: 9px 30px;
+      font-size: 15px;
+      letter-spacing: 0.05em;
+    }
+    .gift-guide-banner__bottom-strip {
+      font-size: 13px;
+      padding: 12px 10px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 </style>
 
+
 {% schema %}
 {
-  "name": "Tisso Gift Header Bar",
+  "name": "Tisso Gift Section",
   "settings": [
-    { "type": "image_picker", "id": "brand_image", "label": "Select Logo Image" },
-    { "type": "text", "id": "message_text", "label": "Message Text", "default": "Find the ideal gift for your loved ones." },
-    { "type": "text", "id": "btn_text", "label": "Button Label", "default": "CHOOSE GIFT" },
-    { "type": "url", "id": "btn_link", "label": "Button Link" }
+
+    {
+      "type": "header",
+      "content": "━━ HEADER BAR — Branding"
+    },
+    {
+      "type": "image_picker",
+      "id": "brand_image",
+      "label": "Logo Image"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo Height (px)",
+      "min": 16,
+      "max": 60,
+      "step": 1,
+      "default": 28
+    },
+
+    {
+      "type": "header",
+      "content": "━━ HEADER BAR — Layout"
+    },
+    {
+      "type": "range",
+      "id": "bar_height",
+      "label": "Bar Height (px)",
+      "min": 50,
+      "max": 120,
+      "step": 1,
+      "default": 75
+    },
+
+    {
+      "type": "header",
+      "content": "━━ HEADER BAR — Colors"
+    },
+    {
+      "type": "color",
+      "id": "bar_bg_color",
+      "label": "Bar Background Color",
+      "default": "#f6f6f6"
+    },
+    {
+      "type": "color",
+      "id": "bar_text_color",
+      "label": "Message Text Color",
+      "default": "#1c1c1c"
+    },
+    {
+      "type": "color",
+      "id": "bar_btn_bg",
+      "label": "Button Background Color",
+      "default": "#ffff00"
+    },
+    {
+      "type": "color",
+      "id": "bar_btn_color",
+      "label": "Button Text Color",
+      "default": "#000000"
+    },
+
+    {
+      "type": "header",
+      "content": "━━ HEADER BAR — Content"
+    },
+    {
+      "type": "text",
+      "id": "bar_message_text",
+      "label": "Bar Message Text",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "bar_btn_text",
+      "label": "Bar Button Label",
+      "default": "CHOOSE GIFT"
+    },
+    {
+      "type": "url",
+      "id": "bar_btn_link",
+      "label": "Bar Button Link"
+    },
+
+    {
+      "type": "header",
+      "content": "━━ BANNER — Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_bg",
+      "label": "Desktop Background Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_bg",
+      "label": "Mobile Background Image"
+    },
+   
+
+    {
+      "type": "header",
+      "content": "━━ BANNER — Layout"
+    },
+    {
+      "type": "range",
+      "id": "banner_min_height_desktop",
+      "label": "Min Height — Desktop (px)",
+      "min": 400,
+      "max": 1200,
+      "step": 10,
+      "default": 820
+    },
+    {
+      "type": "range",
+      "id": "banner_min_height_mobile",
+      "label": "Min Height — Mobile (px)",
+      "min": 300,
+      "max": 900,
+      "step": 10,
+      "default": 620
+    },
+
+    {
+      "type": "header",
+      "content": "━━ BANNER — Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading Font Size — Desktop (px)",
+      "min": 30,
+      "max": 120,
+      "step": 2,
+      "default": 70
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Discover Joy: Your Ultimate Holiday Gift Destination.</p>"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description Font Size — Desktop (px)",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "text",
+      "id": "banner_btn_text",
+      "label": "Banner Button Text",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "banner_btn_link",
+      "label": "Banner Button Link"
+    },
+    {
+      "type": "text",
+      "id": "bottom_text",
+      "label": "Bottom Strip Text",
+      "default": "SUSTAINABLE, ETHICALLY MADE ACTIVEWEAR"
+    },
+
+    {
+      "type": "header",
+      "content": "━━ BANNER — Colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "banner_btn_bg",
+      "label": "Banner Button Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "banner_btn_color",
+      "label": "Banner Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "strip_bg",
+      "label": "Bottom Strip Background",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "strip_color",
+      "label": "Bottom Strip Text Color",
+      "default": "#000000"
+    }
+
   ],
   "presets": [
-    { "name": "Tisso Gift Header Bar" }
+    {
+      "name": "Tisso Gift Section"
+    }
   ]
 }
 {% endschema %}
