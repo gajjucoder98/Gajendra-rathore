@@ -6,7 +6,7 @@
   "
 >
   <div class="gift-guide-banner__content ">
-
+  <div>
     {% if section.settings.heading != blank %}
       <h2 class="gift-guide-banner__heading">
         {{ section.settings.heading }}
@@ -18,7 +18,7 @@
         {{ section.settings.description }}
       </div>
     {% endif %}
-
+</div>
     {% if section.settings.button_text != blank %}
       <a
         href="{{ section.settings.button_link }}"
