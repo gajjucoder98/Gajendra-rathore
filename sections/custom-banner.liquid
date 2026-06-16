@@ -138,19 +138,18 @@ document.addEventListener('DOMContentLoaded', function() {
     letter-spacing: 0.2px;
   }
   .bar-btn {
-    background-color: #ffff00;
-    color: #000000;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 1px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 12px 35px;
-    text-transform: uppercase;
-    transition: opacity 0.15s ease;
+     position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 40px;
+  background: #fff;
+  color: #000;
+  text-decoration: none;
+  border: 1px solid #000;
+  overflow: hidden;
+  z-index: 1;
+  transition: color .35s ease;
   }
   .bar-btn:before{
   content:'';
