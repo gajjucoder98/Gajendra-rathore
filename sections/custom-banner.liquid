@@ -11,7 +11,8 @@
 
     <div class="bar-brand">
       {% if section.settings.brand_image != blank %}
-        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element">
+        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element base-layer">
+        <img src="{{ section.settings.brand_image | img_url: 'master' }}" alt="{{ shop.name }}" class="brand-img-element overlay-layer">
       {% else %}
         <span style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">UPLOAD LOGO</span>
       {% endif %}
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .bar-brand {
     display: flex;
     align-items: center;
+    position: relative;
   }
   .brand-img-element {
     max-height: 28px;
@@ -86,6 +88,11 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block;
     object-fit: contain;
   }
+  /* Desktop par dusra layer hidden rahega */
+  .overlay-layer {
+    display: none !important;
+  }
+  
   .bar-overlay-panel {
     display: flex;
     align-items: center;
@@ -159,12 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .hamburger-icon span:nth-child(2) { top: 6px; }
     .hamburger-icon span:nth-child(3) { top: 12px; }
 
-    /* Cross (X) */
     .is-active .hamburger-icon span:nth-child(1) { top: 6px; transform: rotate(45deg); }
     .is-active .hamburger-icon span:nth-child(2) { opacity: 0; }
     .is-active .hamburger-icon span:nth-child(3) { top: 6px; transform: rotate(-45deg); }
 
-    /* Centered Mobile Logo with Default Close Animation Trigger */
+    /* Centered Mobile Logo Wrapper */
     .bar-brand {
       position: absolute;
       left: 50%;
@@ -172,44 +178,45 @@ document.addEventListener('DOMContentLoaded', function() {
       transform: translate(-50%, -50%);
       pointer-events: none;
       z-index: 10000;
-      animation: logoToCenter 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      width: auto;
+      height: 28px;
     }
 
-    /* Active State Trigger (Shift to Left with Mid-Way Blur) */
-    .is-active .bar-brand {
-      animation: logoToLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    /* Mobile Double-Layer Positions */
+    .brand-img-element {
+      max-height: 28px;
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+    }
+    
+    /* Base layer starts clean at center */
+    .base-layer {
+      position: relative;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    /* Overlay layer exactly over base layer, invisible at first */
+    .overlay-layer {
+      display: block !important;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transform: translateX(4px); /* Halka sa right offset */
+      pointer-events: none;
     }
 
-    /* Keyframes for Shift-Left Motion Blur Illusion */
-    @keyframes logoToLeft {
-      0% {
-        transform: translate(-50%, -50%);
-        filter: blur(0px);
-      }
-      50% {
-        transform: translate(-51.5%, -50%);
-        filter: blur(1.2px); /* Beech raste me halka blurish replacement illusion */
-      }
-      100% {
-        transform: translate(calc(-50% - 3px), -50%);
-        filter: blur(0px); /* Rukte hi wapas ekdam sharp aur clean */
-      }
+    /* ========================================== */
+    /* ACTIVE STATE (Logo Overlap Shift Illusion) */
+    /* ========================================== */
+    .is-active .base-layer {
+      transform: translateX(-3px); /* Base logo khiska left */
+      opacity: 0.65;               /* Thoda light hua */
     }
-
-    /* Keyframes for Shift-Back to Center Matrix */
-    @keyframes logoToCenter {
-      0% {
-        transform: translate(calc(-50% - 3px), -50%);
-        filter: blur(0px);
-      }
-      50% {
-        transform: translate(-51.5%, -50%);
-        filter: blur(1.2px);
-      }
-      100% {
-        transform: translate(-50%, -50%);
-        filter: blur(0px);
-      }
+    
+    .is-active .overlay-layer {
+      opacity: 0.85;               /* Doosra logo solid hokar upar aaya */
+      transform: translateX(-1px); /* Left ki taraf swipe overlap */
     }
 
     /* Overlay Panel Dropdown */
