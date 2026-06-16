@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block;
     object-fit: contain;
   }
-  /* Desktop par dusra layer hidden rahega */
+  /* Desktop par dusra layer hamesha hidden */
   .overlay-layer {
     display: none !important;
   }
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
     }
 
-    /* Base layer default setup with ultra smooth transition time */
+    /* Base layer fully reversible smooth transition */
     .base-layer {
       position: relative;
       opacity: 1;
@@ -193,18 +193,19 @@ document.addEventListener('DOMContentLoaded', function() {
       transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
-    /* Overlay layer positioning */
+    /* Overlay layer default close state (fade out smoothly backward) */
     .overlay-layer {
       display: block !important;
       position: absolute;
       opacity: 0;
       transform: translateX(6px);
       pointer-events: none;
-      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
+      /* CSS transition transitions cleanly on both trigger states */
+      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* ========================================== */
-    /* ACTIVE STATE (Slower & Smoother Overlap)  */
+    /* ACTIVE STATE & REVERSE TRANSITION MATRIX   */
     /* ========================================== */
     .is-active .base-layer {
       transform: translateX(-4px); 
@@ -214,11 +215,16 @@ document.addEventListener('DOMContentLoaded', function() {
       opacity: 0.4;                
       transform: translateX(-4px); 
       
-      /* Pure smooth fade-out complete hone tak transition active rakhega */
+      /* Jab menu open hoga to ye fade animation complete karega */
       animation: clearOverlay 0.68s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    /* Transition khatam hote hi clean simple frame balance karne ke liye */
+    /* Reversible logic: Jab menu active nahi hoga to overlay layer handle karegi transition backward path */
+    :not(.is-active) .overlay-layer {
+      opacity: 0;
+      transform: translateX(6px);
+    }
+
     @keyframes clearOverlay {
       0% { opacity: 0.4; }
       70% { opacity: 0.2; }
