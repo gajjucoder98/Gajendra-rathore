@@ -17,7 +17,13 @@
         <span style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">UPLOAD LOGO</span>
       {% endif %}
     </div>
-
+ <p class="bar-message">{{ section.settings.message_text }}</p>
+        <a href="{{ section.settings.btn_link }}" class="bar-btn">
+          {{ section.settings.btn_text }}
+          <svg class="arrow-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
     <div class="bar-overlay-panel">
       <div class="panel-inner">
         <p class="bar-message">{{ section.settings.message_text }}</p>
