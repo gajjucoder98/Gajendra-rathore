@@ -54,6 +54,7 @@
       "name": "Gift Guide Banner",
       "settings": {
         "desktop_bg": "shopify://shop_images/Group_1000008197.png",
+        "mobile_bg": "shopify://shop_images/Frame_1958.png",
         "top_logo_text": "TISSO VISION",
         "top_center_text": "Find the ideal gift for your loved ones.",
         "top_button_text": "CHOOSE GIFT",
