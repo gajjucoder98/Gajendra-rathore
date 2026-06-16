@@ -17,8 +17,8 @@
         <span style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">UPLOAD LOGO</span>
       {% endif %}
     </div>
- <p class="bar-message">{{ section.settings.message_text }}</p>
-        <a href="{{ section.settings.btn_link }}" class="bar-btn">
+ <p class="bar-message bar-message-phn">{{ section.settings.message_text }}</p>
+        <a href="{{ section.settings.btn_link }}" class="bar-btn bar-btn-phn">
           {{ section.settings.btn_text }}
           <svg class="arrow-icon" viewBox="0 0 24 24" width="20" height="20">
             <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -165,6 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
       padding: 0 20px;
       position: relative;
     }
+    .bar-message-phn,
+    .bar-btn-phn{
+    display:none;}
     .bar-toggle {
       display: flex;
       background: none;
