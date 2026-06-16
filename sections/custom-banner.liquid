@@ -57,7 +57,6 @@
     {{ section.settings.bottom_text }}
   </div>
 </section>
-
 <style>
 
 .gift-guide-banner{
@@ -82,14 +81,15 @@
 }
 
 .gift-guide-banner__logo{
-  font-size:28px;
+  font-size:18px;
   font-weight:700;
   letter-spacing:.05em;
 }
 
 .gift-guide-banner__center-text{
   text-align:center;
-  font-size:14px;
+  font-size:16px;
+  font-weight:400;
 }
 
 .gift-guide-banner__top-btn{
@@ -97,8 +97,8 @@
   background:#f3e61f;
   color:#000;
   text-decoration:none;
-  padding:14px 28px;
-  font-weight:600;
+  padding:9px 28px;
+  font-weight:400;
   display:flex;
   align-items:center;
   gap:10px;
@@ -110,21 +110,22 @@
   flex-direction:column;
   justify-content:center;
   max-width:600px;
-  padding-top:80px;
-  padding-bottom:80px;
+ 
+  padding: 0px 32px;
+  padding-bottom:60px;
 }
 
 .gift-guide-banner__heading{
-  font-size:78px;
+  font-size:70px;
   line-height:1;
-  font-weight:700;
-  margin:0 0 24px;
+  font-weight:500;
+  margin:0 0 25px;
 }
 
 .gift-guide-banner__description{
   max-width:500px;
-  font-size:18px;
-  line-height:1.7;
+  font-size:20px;
+  line-height:1.2;
   margin-bottom:32px;
 }
 
@@ -186,7 +187,6 @@
 }
 
 </style>
-
 {% schema %}
 {
   "name": "Gift Guide Banner",
