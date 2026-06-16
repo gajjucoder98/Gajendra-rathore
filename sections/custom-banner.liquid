@@ -185,50 +185,45 @@ document.addEventListener('DOMContentLoaded', function() {
       justify-content: center;
     }
 
-    /* Base layer fully reversible smooth transition */
+    /* 
+      CLOSE STATE EFFECT (Left-to-Right Return Transition)
+      Jab menu active se hatt jayega, toh ye transitions reverse hokar wapas center aayengi.
+    */
     .base-layer {
       position: relative;
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0); /* Center par return */
       transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
-    /* Overlay layer default close state (fade out smoothly backward) */
     .overlay-layer {
       display: block !important;
       position: absolute;
-      opacity: 0;
-      transform: translateX(6px);
+      opacity: 0; /* Baad me simple look ke liye fade out */
+      transform: translateX(6px); /* Right ki taraf travel out */
       pointer-events: none;
-      /* CSS transition transitions cleanly on both trigger states */
-      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease;
     }
 
     /* ========================================== */
-    /* ACTIVE STATE & REVERSE TRANSITION MATRIX   */
+    /* ACTIVE STATE (Right-to-Left Slide Shift)   */
     /* ========================================== */
     .is-active .base-layer {
-      transform: translateX(-4px); 
+      transform: translateX(-4px); /* Smoothly khiska left */
     }
     
     .is-active .overlay-layer {
       opacity: 0.4;                
-      transform: translateX(-4px); 
+      transform: translateX(-4px); /* Right se left swipe loop overlay */
       
-      /* Jab menu open hoga to ye fade animation complete karega */
-      animation: clearOverlay 0.68s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      /* Animation loop end frame me layer clear standard maintain rakhegi */
+      animation: clearOverlayOnActive 0.68s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
-    /* Reversible logic: Jab menu active nahi hoga to overlay layer handle karegi transition backward path */
-    :not(.is-active) .overlay-layer {
-      opacity: 0;
-      transform: translateX(6px);
-    }
-
-    @keyframes clearOverlay {
+    @keyframes clearOverlayOnActive {
       0% { opacity: 0.4; }
-      70% { opacity: 0.2; }
-      100% { opacity: 0; } 
+      75% { opacity: 0.15; }
+      100% { opacity: 0; } /* End me simple clean visual */
     }
 
     /* Dropdown Overlay Panel */
