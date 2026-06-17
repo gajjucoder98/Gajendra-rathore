@@ -129,8 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!jsonEl) return null;
 
     const productData = JSON.parse(jsonEl.textContent);
-    console.log(productData)
     const radioChecked = card.querySelector('.color-swatch-input:checked');
+    console.log(radioChecked)
     const dropdownSelect = card.querySelector('.variant-select');
 
     const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
