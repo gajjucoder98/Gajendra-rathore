@@ -141,21 +141,27 @@
       return (str || '').toLowerCase().trim();
     }
 
-    // 1. OPEN / CLOSE POPUP ACTIONS
-    document.querySelectorAll('.product-card').forEach((card) => {
-      card.addEventListener('click', () => {
-        card.querySelector('.js-popup-backdrop').classList.add('active');
-        document.body.style.overflow = 'hidden';
-      });
+ // 1. OPEN / CLOSE POPUP ACTIONS
+document.querySelectorAll('.product-card').forEach((card) => {
+  const plusIcon = card.querySelector('.product-card__plus-icon');
+  
+  if (plusIcon) {
+    plusIcon.addEventListener('click', (e) => {
+      // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
+      e.stopPropagation(); 
+      card.querySelector('.js-popup-backdrop').classList.add('active');
+      document.body.style.overflow = 'hidden';
     });
+  }
+});
 
-    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
-      closeTarget.addEventListener('click', function (e) {
-        e.stopPropagation();
-        this.closest('.js-popup-backdrop').classList.remove('active');
-        document.body.style.overflow = '';
-      });
-    });
+document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+  closeTarget.addEventListener('click', function (e) {
+    e.stopPropagation();
+    this.closest('.js-popup-backdrop').classList.remove('active');
+    document.body.style.overflow = '';
+  });
+});
 
     // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
     function getSelectedVariant(card) {
