@@ -28,9 +28,6 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     CENTERED POPUP MODAL (one shared modal, content swapped per product)
-     ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="ppc-popup-backdrop" id="ppcPopupBackdrop">
   <div class="ppc-popup" id="ppcPopup">
     <button class="ppc-popup__close" id="ppcPopupClose" aria-label="Close">&times;</button>
@@ -56,7 +53,6 @@
   </div>
 </div>
 
-<!-- Hidden data stores: one per product block -->
 {% for block in section.blocks %}
   {% assign product = block.settings.product %}
   {% if product != blank %}
@@ -88,6 +84,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+  console.log('[ProductCards] Init: DOM Content Loaded Successfully.');
+
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
   function normalize(str) {
@@ -95,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function findVariant(variants, color, size) {
+    console.log('[ProductCards] Finding variant for Color:', color, '| Size:', size);
     if (color && size) {
       return variants.find(
         v => normalize(v.color) === normalize(color) &&
@@ -125,10 +124,20 @@ document.addEventListener('DOMContentLoaded', function () {
   // ─── Open popup ─────────────────────────────────────────────────────────────
 
   function openPopup(blockId) {
+    console.log('[ProductCards] Attempting to open popup for block ID:', blockId);
     const jsonEl = document.querySelector('.ppc-product-data[data-block-id="' + blockId + '"]');
-    if (!jsonEl) return;
+    if (!jsonEl) {
+      console.error('[ProductCards] Error: JSON data element not found for block ID:', blockId);
+      return;
+    }
 
-    try { currentData = JSON.parse(jsonEl.textContent); } catch (e) { return; }
+    try { 
+      currentData = JSON.parse(jsonEl.textContent); 
+      console.log('[ProductCards] Loaded Product Data:', currentData);
+    } catch (e) { 
+      console.error('[ProductCards] Error: Failed to parse Product JSON Data:', e);
+      return; 
+    }
 
     // Fill static fields
     thumbEl.innerHTML  = currentData.image
@@ -142,13 +151,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Build variant selectors (only when product has real variants)
     variantsEl.innerHTML = '';
-   // इसे बदलें:
-if (currentData.variants && currentData.variants.length > 0) {
-  // अगर डिफ़ॉल्ट वेरिएंट के अलावा असली वेरिएंट्स हैं (जैसे कलर/साइज़) तभी ड्रॉपडाउन दिखाएं
-  if (currentData.hasVariants === false) {
-    variantsEl.innerHTML = buildVariantHTML(blockId, currentData.variants);
-  }
-}
+    if (currentData.variants && currentData.variants.length > 0) {
+      // product.has_only_default_variant false hone par hi options dropdown dikhayen
+      if (currentData.hasVariants === false) {
+        console.log('[ProductCards] Product has variants, rendering UI dropdowns...');
+        variantsEl.innerHTML = buildVariantHTML(blockId, currentData.variants);
+      } else {
+        console.log('[ProductCards] Product uses default single variant. Skipping UI dropdowns.');
+      }
+    }
 
     // Show
     backdrop.classList.add('active');
@@ -156,6 +167,7 @@ if (currentData.variants && currentData.variants.length > 0) {
   }
 
   function closePopup() {
+    console.log('[ProductCards] Closing popup.');
     backdrop.classList.remove('active');
     document.body.style.overflow = '';
     currentData = null;
@@ -164,13 +176,14 @@ if (currentData.variants && currentData.variants.length > 0) {
   // ─── Build variant HTML ─────────────────────────────────────────────────────
 
   function buildVariantHTML(blockId, variants) {
-    // Unique colors
     const colors = [];
     const sizes  = [];
     variants.forEach(v => {
       if (v.color && colors.indexOf(v.color) === -1) colors.push(v.color);
       if (v.size  && sizes.indexOf(v.size)   === -1) sizes.push(v.size);
     });
+
+    console.log('[ProductCards] Extracted Option Values -> Colors:', colors, '| Sizes:', sizes);
 
     let html = '<div class="variant-selection-container">';
 
@@ -221,7 +234,10 @@ if (currentData.variants && currentData.variants.length > 0) {
     if (sizeSelect && !size) return; // wait until size chosen
 
     const matched = findVariant(currentData.variants, color, size);
-    if (matched) priceEl.textContent = matched.price;
+    if (matched) {
+      console.log('[ProductCards] Price updated to:', matched.price);
+      priceEl.textContent = matched.price;
+    }
   }
 
   // ─── Event: variant change inside popup ─────────────────────────────────────
@@ -229,6 +245,7 @@ if (currentData.variants && currentData.variants.length > 0) {
   document.addEventListener('change', function (e) {
     if (e.target.classList.contains('popup-color-input') ||
         e.target.classList.contains('popup-size-select')) {
+      console.log('[ProductCards] Variant option changed by user.');
       updatePopupPrice();
     }
   });
@@ -236,7 +253,7 @@ if (currentData.variants && currentData.variants.length > 0) {
   // ─── Cart helpers ───────────────────────────────────────────────────────────
 
   async function addToCart(items) {
-    // items = array of { id, quantity } objects
+    console.log('[ProductCards] Sending POST to /cart/add.js with payload:', JSON.stringify({ items: items }));
     const res = await fetch('/cart/add.js', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -244,12 +261,14 @@ if (currentData.variants && currentData.variants.length > 0) {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      console.error('[ProductCards] Shopify Cart API Error Response:', err);
       throw new Error(err.description || 'Add to cart failed');
     }
     return res.json();
   }
 
   async function refreshCartCount() {
+    console.log('[ProductCards] Refreshing cart count bubbles...');
     try {
       const res   = await fetch('/cart.js');
       const cart  = await res.json();
@@ -272,18 +291,18 @@ if (currentData.variants && currentData.variants.length > 0) {
       if (window.Shopify && window.Shopify.sections) {
         window.Shopify.sections.load('#cart-icon-bubble').catch(() => {});
       }
+      console.log('[ProductCards] Cart count update successful. Total Items:', count);
     } catch (e) {
       console.warn('[ProductCards] Cart count refresh failed:', e);
     }
   }
 
   async function openCartDrawer() {
+    console.log('[ProductCards] Attempting to open Drawer Drawer...');
     const drawer = document.querySelector('cart-drawer');
 
     if (drawer && typeof drawer.renderContents === 'function') {
       try {
-        // IMPORTANT: Remove is-empty classes BEFORE rendering
-        // When first product is added to an empty cart, these classes hide the content
         drawer.classList.remove('is-empty');
         const drawerItems = drawer.querySelector('cart-drawer-items');
         if (drawerItems) drawerItems.classList.remove('is-empty');
@@ -294,12 +313,10 @@ if (currentData.variants && currentData.variants.length > 0) {
         const res  = await fetch('/?sections=' + sectionsToFetch);
         const data = await res.json();
 
-        // Dawn's renderContents: updates #CartDrawer innerHTML + #cart-icon-bubble, then calls this.open()
         drawer.renderContents({ sections: data });
-
+        console.log('[ProductCards] Dawn Theme Cart Drawer opened via renderContents.');
       } catch (e) {
-        console.warn('[ProductCards] Drawer renderContents failed:', e);
-        // Fallback: just try opening drawer as-is
+        console.warn('[ProductCards] Drawer renderContents failed fallback activated:', e);
         if (typeof drawer.open === 'function') {
           drawer.open();
         }
@@ -307,16 +324,15 @@ if (currentData.variants && currentData.variants.length > 0) {
       return;
     }
 
-    // Fallback for non-Dawn themes
     if (drawer && typeof drawer.open === 'function') {
       drawer.open();
       return;
     }
 
-    // Last resort: generic .drawer__inner
     const drawerInner = document.querySelector('.drawer__inner');
     if (drawerInner) {
       drawerInner.classList.add('active');
+      console.log('[ProductCards] Fallback non-Dawn drawer activated class .active');
     }
   }
 
@@ -342,79 +358,94 @@ if (currentData.variants && currentData.variants.length > 0) {
   // ─── Click: Add to Cart inside popup ────────────────────────────────────────
 
   addBtn.addEventListener('click', async function (e) {
-  e.stopPropagation();
-  if (!currentData || addBtn.disabled) return;
-
-  const variants = currentData.variants;
-  if (!variants.length) return;
-
-  const colorInput = popup.querySelector('.popup-color-input:checked');
-  const sizeSelect = popup.querySelector('.popup-size-select');
-
-  const selectedColor = colorInput ? colorInput.value : '';
-  const selectedSize  = sizeSelect ? sizeSelect.value : '';
-
-  // अगर साइज़ ड्रॉपडाउन मौजूद है लेकिन यूज़र ने चुना नहीं है
-  if (sizeSelect && !selectedSize) {
-    alert('Please select a size first!');
-    return;
-  }
-
-  // वेरिएंट मैच करें
-  let matched = findVariant(variants, selectedColor, selectedSize);
-
-  // बैकअप: अगर प्रोडक्ट का सिर्फ एक ही डिफ़ॉल्ट वेरिएंट है (No variants options)
-  if (!matched && currentData.hasVariants) {
-    matched = variants[0];
-  }
-
-  if (!matched) {
-    alert('This combination is not available. Please select another option.');
-    return;
-  }
-
-  if (!matched.available) {
-    alert('Sorry, this variant is currently out of stock.');
-    return;
-  }
-
-  addBtn.disabled = true;
-  const originalHTML = addBtn.innerHTML;
-  addBtn.innerHTML = '<span>ADDING...</span>';
-
-  try {
-    // मुख्य प्रोडक्ट को एरे में डालें
-    const itemsToAdd = [{ id: parseInt(matched.id), quantity: 1 }];
-
-    // गिफ्ट प्रोडक्ट कंडीशन (Black + M)
-    const FREE_VARIANT_ID = 8565446934713;
-    if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
-      itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
+    e.stopPropagation();
+    console.log('[ProductCards] Add To Cart button triggered.');
+    if (!currentData || addBtn.disabled) {
+      console.warn('[ProductCards] Request blocked. Data missing or button disabled.');
+      return;
     }
 
-    console.log('[ProductCards] Sending to Shopify Cart:', itemsToAdd);
-    
-    // कार्ट में ऐड करें
-    await addToCart(itemsToAdd);
+    const variants = currentData.variants;
+    if (!variants.length) {
+      console.error('[ProductCards] Error: Current product has no variants data.');
+      return;
+    }
 
-    addBtn.innerHTML = '<span>ADDED ✓</span>';
+    const colorInput = popup.querySelector('.popup-color-input:checked');
+    const sizeSelect = popup.querySelector('.popup-size-select');
 
-    // पॉपअप बंद करें और कार्ट रिफ्रेश करें
-    closePopup();
-    await refreshCartCount();
-    await openCartDrawer();
+    const selectedColor = colorInput ? colorInput.value : '';
+    const selectedSize  = sizeSelect ? sizeSelect.value : '';
 
-  } catch (err) {
-    console.error('[ProductCards] Add to cart error:', err);
-    alert('Could not add to cart. Please try again.');
-    addBtn.innerHTML = '<span>ERROR — TRY AGAIN</span>';
-  } finally {
-    setTimeout(() => {
-      addBtn.innerHTML = originalHTML;
-      addBtn.disabled  = false;
-    }, 1600);
-  }
-});
+    if (sizeSelect && !selectedSize) {
+      console.warn('[ProductCards] Size validation failed: User did not select a size.');
+      alert('Please select a size first!');
+      return;
+    }
+
+    // 1. Find Matched Variant
+    let matched = findVariant(variants, selectedColor, selectedSize);
+
+    // Backup if single item (No variant options structure)
+    if (!matched && currentData.hasVariants) {
+      console.log('[ProductCards] No selector match found, but product is fallback single variant. Using index 0.');
+      matched = variants[0];
+    }
+
+    if (!matched) {
+      console.error('[ProductCards] Error: Could not match selected options to any variant.');
+      alert('This combination is not available. Please select another option.');
+      return;
+    }
+
+    if (!matched.available) {
+      console.warn('[ProductCards] Variant selected is Out of Stock:', matched);
+      alert('Sorry, this variant is currently out of stock.');
+      return;
+    }
+
+    addBtn.disabled = true;
+    const originalHTML = addBtn.innerHTML;
+    addBtn.innerHTML = '<span>ADDING...</span>';
+
+    try {
+      // Main product item object
+      const itemsToAdd = [{ id: parseInt(matched.id), quantity: 1 }];
+
+      // 2. Gift Product logic check (Color: black, Size: m)
+      const FREE_VARIANT_ID = 8565446934713; 
+      
+      console.log('[ProductCards] Checking Gift rules. User Normalized Color:', normalize(selectedColor), '| Normalized Size:', normalize(selectedSize));
+      
+      if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
+        console.log('[ProductCards] Match Success! Adding Free Gift ID:', FREE_VARIANT_ID);
+        itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
+      } else {
+        console.log('[ProductCards] Gift rules did not match for this variation.');
+      }
+
+      console.log('[ProductCards] Proceeding to queue items to Shopify API:', itemsToAdd);
+      
+      // API trigger
+      await addToCart(itemsToAdd);
+
+      addBtn.innerHTML = '<span>ADDED ✓</span>';
+      console.log('[ProductCards] API success response received.');
+
+      closePopup();
+      await refreshCartCount();
+      await openCartDrawer();
+
+    } catch (err) {
+      console.error('[ProductCards] Fatal Exception during Cart process:', err);
+      addBtn.innerHTML = '<span>ERROR — TRY AGAIN</span>';
+    } finally {
+      setTimeout(() => {
+        addBtn.innerHTML = originalHTML;
+        addBtn.disabled  = false;
+      }, 1600);
+    }
+  });
 
 });
 </script>
