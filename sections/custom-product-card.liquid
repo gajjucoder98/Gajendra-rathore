@@ -177,74 +177,74 @@
       const placeholder = dropdown.querySelector('.js-dropdown-placeholder');
       const items = dropdown.querySelectorAll('.custom-dropdown-item');
 
-      // Open/Close toggle list box
       toggle.addEventListener('click', function (e) {
         e.stopPropagation();
-        
-        // Close other open dropdowns first inside grid
         document.querySelectorAll('.custom-dropdown-container').forEach((other) => {
           if (other !== dropdown) other.classList.remove('is-open');
         });
-        
         dropdown.classList.toggle('is-open');
       });
 
-      // Item choice logic
       items.forEach((item) => {
         item.addEventListener('click', function (e) {
           e.stopPropagation();
           const selectedValue = this.getAttribute('data-value');
           
-          // Visual selection switch
           items.forEach(i => i.classList.remove('is-selected'));
           this.classList.add('is-selected');
           
-          // Apply changes to UI and Hidden input
           placeholder.textContent = this.textContent.trim();
           hiddenInput.value = selectedValue;
           
           dropdown.classList.remove('is-open');
 
-          // CRITICAL FIX: Trigger change event manually so JS updates price instantly
+          // Trigger change event manually so product-card event listener catches it
           const changeEvent = new Event('change', { bubbles: true });
           hiddenInput.dispatchEvent(changeEvent);
         });
       });
     });
 
-    // Close any opened dropdown if user clicks anywhere outside of it
     document.addEventListener('click', () => {
       document.querySelectorAll('.custom-dropdown-container').forEach((dropdown) => {
         dropdown.classList.remove('is-open');
       });
     });
 
-    // 3. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
+    // 3. FIXED: ACCURATE MULTI-OPTION VARIANT MATCHING
     function getSelectedVariant(card) {
       const jsonEl = card.querySelector('.js-raw-product-data');
       if (!jsonEl) return null;
 
       const productData = JSON.parse(jsonEl.textContent);
+      
+      // Get all active values
       const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const dropdownSelect = card.querySelector('.variant-select'); // Now accurately targets hidden input value
+      const dropdownSelect = card.querySelector('.variant-select');
 
-      const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
-      const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
+      const activeColor = radioChecked ? cleanVal(radioChecked.value) : null;
+      const activeSize = dropdownSelect && dropdownSelect.value ? cleanVal(dropdownSelect.value) : null;
 
-      return (
-        productData.variants.find((variant) => {
-          const vOpts = variant.options.map((o) => cleanVal(o));
-          if (val1 && val2) {
-            return vOpts.includes(val1) && vOpts.includes(val2);
-          }
-          return vOpts.includes(val1) || vOpts.includes(val2);
-        }) || productData.variants[0]
-      );
+      // Filter options dynamically
+      return productData.variants.find((variant) => {
+        const vOpts = variant.options.map((o) => cleanVal(o));
+        
+        // Agar dono options valid hain, toh dono match hone chahiye
+        if (activeColor && activeSize) {
+          return vOpts.includes(activeColor) && vOpts.includes(activeSize);
+        }
+        // Agar sirf ek option selected hai (jaise sirf Color ya sirf Size)
+        if (activeColor) return vOpts.includes(activeColor);
+        if (activeSize) return vOpts.includes(activeSize);
+        
+        return false;
+      });
     }
 
     // 4. OPTION CHANGED & PRICE LIVE UPDATE
     document.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('change', function (e) {
+        // Target dropdown input or radio inputs
         if (!e.target.classList.contains('js-option-selector')) return;
 
         const matchedVariant = getSelectedVariant(card);
