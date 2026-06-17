@@ -171,18 +171,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function findVariant(variants, color, size) {
-    // Both options present → match both
     if (color && size) {
       return variants.find(
         v => normalize(v.color) === normalize(color) &&
              normalize(v.size)  === normalize(size)
       ) || null;
     }
-    // Size only (no color options)
     if (size) {
       return variants.find(v => normalize(v.size) === normalize(size)) || null;
     }
-    // No options at all (default variant)
     return variants[0] || null;
   }
 
@@ -192,11 +189,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const priceDisplay = card.querySelector('.js-product-price');
     if (!priceDisplay) return;
 
-    const variants     = getVariants(card);
-    const color        = getSelectedColor(card);
-    const size         = getSelectedSize(card);
+    const variants = getVariants(card);
+    const color    = getSelectedColor(card);
+    const size     = getSelectedSize(card);
 
-    // Don't update until size is chosen (avoids showing wrong price)
     if (card.querySelector('.size-select') && !size) return;
 
     const matched = findVariant(variants, color, size);
@@ -207,33 +203,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function refreshCartCount() {
     try {
-      const res  = await fetch('/cart.js');
-      const cart = await res.json();
+      const res   = await fetch('/cart.js');
+      const cart  = await res.json();
       const count = cart.item_count;
 
       document.querySelectorAll('.cart-count-bubble, #cart-icon-bubble, .cart-link__count').forEach(bubble => {
-        // Show/hide bubble
         if (count > 0) {
           bubble.removeAttribute('hidden');
           bubble.classList.remove('hidden');
         } else {
           bubble.setAttribute('hidden', '');
         }
-        // Update inner count span (Dawn theme pattern)
         const spans = bubble.querySelectorAll('span[aria-hidden="true"], span:not(.visually-hidden)');
         spans.forEach(span => { span.textContent = count; });
       });
 
-      // Dispatch standard Shopify events so header sections re-render
       document.dispatchEvent(new CustomEvent('cart:refresh'));
       document.dispatchEvent(new CustomEvent('custom:cart-updated'));
 
-      // Dawn / Online Store 2.0 section rendering
       if (window.Shopify && window.Shopify.sections) {
         window.Shopify.sections.load('#cart-icon-bubble').catch(() => {});
       }
     } catch (e) {
       console.warn('[ProductCards] Cart count refresh failed:', e);
+    }
+  }
+
+  // ─── Drawer open + Shopify Section Rendering API se update ──────────────────
+
+  async function openCartDrawer() {
+    const drawer = document.querySelector('.drawer__inner');
+
+    // Step 1: Active class add karo — CSS me transform: translate(0) is pe lagega
+    if (drawer) {
+      drawer.classList.add('active');
+    }
+
+    // Step 2: Shopify Section Rendering API se drawer ka fresh HTML fetch karo
+    try {
+      // Cart drawer ka section ID dhundo page pe
+      const sectionEl = document.querySelector('[id^="shopify-section"][id*="cart"]');
+      const sectionId = sectionEl
+        ? sectionEl.id.replace('shopify-section-', '')
+        : 'cart-drawer'; // agar nahi mila toh default fallback
+
+      const res  = await fetch(`/?sections=${sectionId}`);
+      const data = await res.json();
+
+      if (data[sectionId]) {
+        const parser     = new DOMParser();
+        const newDoc     = parser.parseFromString(data[sectionId], 'text/html');
+        const newDrawer  = newDoc.querySelector('.drawer__inner');
+
+        if (drawer && newDrawer) {
+          // Inner HTML replace karo — active class wapas lagao kyunki innerHTML reset hogi
+          drawer.innerHTML = newDrawer.innerHTML;
+          drawer.classList.add('active');
+        }
+      }
+    } catch (e) {
+      console.warn('[ProductCards] Drawer section render failed:', e);
     }
   }
 
@@ -268,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedColor = hasColorRadios ? getSelectedColor(card) : '';
     const selectedSize  = hasSizeSelect  ? getSelectedSize(card)  : '';
 
-    // Validate size selection
     if (hasSizeSelect && !selectedSize) {
       alert('Please select a size first!');
       return;
@@ -286,7 +314,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // UI: loading state
     button.disabled = true;
     const originalHTML = button.innerHTML;
     button.innerHTML = '<span>ADDING...</span>';
@@ -294,14 +321,17 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       await addToCart(matched.id, 1);
 
-      // Free product logic — triggers when Black + M selected on any product
-      const FREE_VARIANT_ID = 8565448507577;
+      // Free product logic — Black + M pe trigger hoga
+      const FREE_VARIANT_ID = 8565446934713;
       if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
         await addToCart(FREE_VARIANT_ID, 1);
       }
 
       button.innerHTML = '<span>ADDED ✓</span>';
+
+      // Cart count update + drawer open + section re-render
       await refreshCartCount();
+      await openCartDrawer();
 
     } catch (err) {
       console.error('[ProductCards] Add to cart error:', err);
@@ -561,6 +591,11 @@ document.addEventListener('DOMContentLoaded', function () {
   .product-card__content {
     color: #fff;
     width: 100%;
+  }
+
+  /* Drawer active state — transform slide-in */
+  .drawer__inner.active {
+    transform: translate(0);
   }
 
   @media screen and (max-width: 768px) {
