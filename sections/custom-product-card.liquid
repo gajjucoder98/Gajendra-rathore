@@ -1,5 +1,5 @@
 <section class="custom-product-cards">
-  <div class="page-width">
+  <div class="custom-product-inner">
     {% if section.settings.heading != blank %}
       <h2 class="section-heading">{{ section.settings.heading }}</h2>
     {% endif %}
@@ -258,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function () {
      margin-bottom: 40px;
      font-size:36px;
      font-family:lustria; 
+    }
+    .custom-product-inner{
+      padding:0px 40px;
     }
   .product-cards-grid { 
     display: grid;
