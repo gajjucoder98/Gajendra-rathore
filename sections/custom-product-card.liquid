@@ -231,11 +231,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ─── Cart helpers ───────────────────────────────────────────────────────────
 
-  async function addToCart(variantId, quantity) {
+  async function addToCart(items) {
+    // items = array of { id, quantity } objects
     const res = await fetch('/cart/add.js', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ id: variantId, quantity: quantity || 1 }),
+      body:    JSON.stringify({ items: items }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -276,15 +277,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const drawer = document.querySelector('cart-drawer');
 
     if (drawer && typeof drawer.renderContents === 'function') {
-      // ── Dawn native method: renderContents() ──
-      // It expects { id, sections: { 'cart-drawer': html, 'cart-icon-bubble': html } }
-      // then updates innerHTML of #CartDrawer + #cart-icon-bubble and calls this.open()
       try {
+        // IMPORTANT: Remove is-empty classes BEFORE rendering
+        // When first product is added to an empty cart, these classes hide the content
+        drawer.classList.remove('is-empty');
+        const drawerItems = drawer.querySelector('cart-drawer-items');
+        if (drawerItems) drawerItems.classList.remove('is-empty');
+        const drawerInner = drawer.querySelector('.drawer__inner');
+        if (drawerInner) drawerInner.classList.remove('is-empty');
+
         const sectionsToFetch = ['cart-drawer', 'cart-icon-bubble'].join(',');
         const res  = await fetch('/?sections=' + sectionsToFetch);
         const data = await res.json();
 
-        // renderContents expects parsedState.sections
+        // Dawn's renderContents: updates #CartDrawer innerHTML + #cart-icon-bubble, then calls this.open()
         drawer.renderContents({ sections: data });
 
       } catch (e) {
@@ -314,7 +320,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', function (e) {
-      // Prevent if clicking something else inside card in future
       const blockId = card.dataset.blockId;
       if (blockId) openPopup(blockId);
     });
@@ -367,17 +372,16 @@ document.addEventListener('DOMContentLoaded', function () {
     addBtn.innerHTML = '<span>ADDING...</span>';
 
     try {
-      await addToCart(matched.id, 1);
+      // Build items array: main product + gift product (if Black + M)
+      const itemsToAdd = [{ id: matched.id, quantity: 1 }];
 
-      // Gift product logic — Black + M triggers free product
       const FREE_VARIANT_ID = 8565446934713;
       if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
-        try {
-          await addToCart(FREE_VARIANT_ID, 1);
-        } catch (giftErr) {
-          console.warn('[ProductCards] Gift product add failed:', giftErr);
-        }
+        itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
       }
+
+      console.log('[ProductCards] Adding items:', itemsToAdd);
+      await addToCart(itemsToAdd);
 
       addBtn.innerHTML = '<span>ADDED ✓</span>';
 
