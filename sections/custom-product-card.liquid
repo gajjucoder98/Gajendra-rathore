@@ -71,6 +71,7 @@
                                   <label
                                     for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
                                     class="color-swatch-label"
+                                    style="--swatch-color: {{ value.swatch.color }};"
                                   >
                                     <span
                                       class="color-dot"
@@ -304,8 +305,8 @@
      font-family:lustria;
     }
     .color-swatch-label:before{
-    content:'';
-  width:2px}
+     content:'';
+     width:2px;}
     .custom-product-inner{
       padding:0px 40px;
     }
