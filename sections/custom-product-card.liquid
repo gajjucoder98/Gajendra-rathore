@@ -102,7 +102,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   console.log('[ProductCards] Minimized Object-Based Architecture Loaded.');
 
-  // Open Popup
+ 
   document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', function () {
       const backdrop = this.querySelector('.js-popup-backdrop');
@@ -113,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Close Popup
   document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach(closeEl => {
     closeEl.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -125,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Variant Option Selection & Price Update Logic
+ 
   document.querySelectorAll('.product-card').forEach(card => {
     const masterSelect = card.querySelector('.js-master-variant-select');
     if (!masterSelect) return;
@@ -133,24 +132,24 @@ document.addEventListener('DOMContentLoaded', function () {
     card.addEventListener('change', function (e) {
       if (!e.target.classList.contains('js-variant-input')) return;
 
-      // Get current selected options in this card
+    
       const selectedOpts = [];
       
-      // Check Radio buttons (Color)
+   
       const checkedRadio = card.querySelector('.color-swatch-input:checked');
       if (checkedRadio) selectedOpts.push(checkedRadio.value.toLowerCase().trim());
       
-      // Check Dropdowns (Size)
+    
       const selectedSelect = card.querySelector('.variant-select');
       if (selectedSelect && selectedSelect.value) selectedOpts.push(selectedSelect.value.toLowerCase().trim());
 
-      // Loop master options to find match
+    
       let matchedOption = null;
       Array.from(masterSelect.options).forEach(opt => {
         const o1 = (opt.dataset.opt1 || '').toLowerCase().trim();
         const o2 = (opt.dataset.opt2 || '').toLowerCase().trim();
 
-        // Match Logic
+       
         const matchAll = selectedOpts.every(val => val === o1 || val === o2);
         if (matchAll && selectedOpts.length > 0) {
           matchedOption = opt;
