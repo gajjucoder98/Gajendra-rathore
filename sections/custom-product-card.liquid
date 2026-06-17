@@ -142,9 +142,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Build variant selectors (only when product has real variants)
     variantsEl.innerHTML = '';
-    if (currentData.hasVariants === false && currentData.variants.length > 1) {
-      variantsEl.innerHTML = buildVariantHTML(blockId, currentData.variants);
-    }
+   // इसे बदलें:
+if (currentData.variants && currentData.variants.length > 0) {
+  // अगर डिफ़ॉल्ट वेरिएंट के अलावा असली वेरिएंट्स हैं (जैसे कलर/साइज़) तभी ड्रॉपडाउन दिखाएं
+  if (currentData.hasVariants === false) {
+    variantsEl.innerHTML = buildVariantHTML(blockId, currentData.variants);
+  }
+}
 
     // Show
     backdrop.classList.add('active');
