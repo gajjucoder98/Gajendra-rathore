@@ -1,13 +1,14 @@
 <section class="custom-product-cards">
-  <div class="custom-product-inner">
+  <div class="page-width">
     {% if section.settings.heading != blank %}
       <h2 class="section-heading">{{ section.settings.heading }}</h2>
     {% endif %}
-
+ 
     <div class="product-cards-grid">
       {% for block in section.blocks %}
         {% assign product = block.settings.product %}
         {% if product != blank %}
+          
           <div class="product-card" data-block-id="{{ block.id }}">
             <div class="product-card__image">
               {% if block.settings.custom_image != blank %}
@@ -16,11 +17,8 @@
                 {{ product.featured_image | image_url: width: 800 | image_tag: loading: 'lazy' }}
               {% endif %}
             </div>
-            <div
-              class="product-card__plus-icon"
-              style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;"
-            >
-          {% render 'plus-icon' %}
+            <div class="product-card__plus-icon" style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;">
+              <span class="plus-symbol">+</span>
             </div>
 
             <div class="ppc-popup-backdrop js-popup-backdrop">
@@ -30,22 +28,13 @@
                 <div class="ppc-popup__body">
                   <div class="product-info-top">
                     <div class="product-thumb">
-                      {% if product.featured_image -%}
-                        {{- product.featured_image | image_url: width: 200 | image_tag -}}
-                      {%- endif %}
+                      {% if product.featured_image %}{{ product.featured_image | image_url: width: 200 | image_tag }}{% endif %}
                     </div>
                     <div class="product-details">
                       <h3>{{ block.settings.custom_title | default: product.title }}</h3>
-                      <div class="product-desc">
-                        {{
-                          block.settings.custom_description
-                          | default: product.description
-                          | strip_html
-                          | truncate: 120
-                        }}
-                      </div>
+                      <div class="product-desc">{{ block.settings.custom_description | default: product.description | strip_html | truncate: 120 }}</div>
                       <div class="product-price js-price-display">{{ product.price | money }}</div>
-                   
+                      <div class="product-vendor">{{ product.vendor }}</div>
                     </div>
                   </div>
 
@@ -54,27 +43,13 @@
                       {% for option in product.options_with_values %}
                         <div class="variant-option-group">
                           <label class="variant-label">{{ option.name }}</label>
-
+                          
                           {% if option.name == 'Color' or option.name == 'color' or option.name == 'Colour' %}
                             <div class="color-swatch-wrapper">
                               {% for value in option.values %}
                                 <div class="color-swatch-item">
-                                  <input
-                                    type="radio"
-                                    id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
-                                    name="color-{{ block.id }}"
-                                    value="{{ value | escape }}"
-                                    class="color-swatch-input js-option-selector"
-                                    {% if forloop.first %}
-                                      checked
-                                    {% endif %}
-                                  >
-                                  <label
-                                    for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
-                                    class="color-swatch-label"
-                                  >
-                                    {{- value -}}
-                                  </label>
+                                  <input type="radio" id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" name="color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-option-selector" {% if forloop.first %}checked{% endif %}>
+                                  <label for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" class="color-swatch-label">{{ value }}</label>
                                 </div>
                               {% endfor %}
                             </div>
@@ -86,18 +61,7 @@
                                   <option value="{{ value | escape }}">{{ value }}</option>
                                 {% endfor %}
                               </select>
-                              <span class="dropdown-chevron">
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width="18"
-                                  height="18"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                  fill="none"
-                                >
-                                  <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                              </span>
+                              <span class="dropdown-chevron"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
                             </div>
                           {% endif %}
                         </div>
@@ -127,6 +91,7 @@
                 ]
               }
             </script>
+
           </div>
         {% endif %}
       {% endfor %}
@@ -135,213 +100,173 @@
 </section>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Format Helper
-    function cleanVal(str) {
-      return (str || '').toLowerCase().trim();
-    }
+document.addEventListener('DOMContentLoaded', function () {
 
- // 1. OPEN / CLOSE POPUP ACTIONS
-document.querySelectorAll('.product-card').forEach((card) => {
-  const plusIcon = card.querySelector('.product-card__plus-icon');
-  
-  if (plusIcon) {
-    plusIcon.addEventListener('click', (e) => {
-      // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
-      e.stopPropagation(); 
+  // Format Helper
+  function cleanVal(str) {
+    return (str || '').toLowerCase().trim();
+  }
+
+  // 1. OPEN / CLOSE POPUP ACTIONS
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', () => {
       card.querySelector('.js-popup-backdrop').classList.add('active');
       document.body.style.overflow = 'hidden';
     });
-  }
-});
-
-document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
-  closeTarget.addEventListener('click', function (e) {
-    e.stopPropagation();
-    this.closest('.js-popup-backdrop').classList.remove('active');
-    document.body.style.overflow = '';
   });
-});
 
-    // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
-    function getSelectedVariant(card) {
-      const jsonEl = card.querySelector('.js-raw-product-data');
-      if (!jsonEl) return null;
+  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach(closeTarget => {
+    closeTarget.addEventListener('click', function (e) {
+      e.stopPropagation();
+      this.closest('.js-popup-backdrop').classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
 
-      const productData = JSON.parse(jsonEl.textContent);
+  // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
+  function getSelectedVariant(card) {
+    const jsonEl = card.querySelector('.js-raw-product-data');
+    if (!jsonEl) return null;
+
+    const productData = JSON.parse(jsonEl.textContent);
+    const radioChecked = card.querySelector('.color-swatch-input:checked');
+    const dropdownSelect = card.querySelector('.variant-select');
+
+    const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
+    const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
+
+    // Filter matching variants array from JSON
+    return productData.variants.find(variant => {
+      const vOpts = variant.options.map(o => cleanVal(o));
+      if (val1 && val2) {
+        return vOpts.includes(val1) && vOpts.includes(val2);
+      }
+      return vOpts.includes(val1) || vOpts.includes(val2);
+    }) || productData.variants[0];
+  }
+
+  // 3. OPTION CHANGED & PRICE LIVE UPDATE
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('js-option-selector')) return;
+
+      const matchedVariant = getSelectedVariant(card);
+      if (matchedVariant) {
+        card.querySelector('.js-price-display').textContent = matchedVariant.price;
+      }
+    });
+  });
+
+  // 4. AJAX SUBMIT AND GIFT VALIDATION
+  document.querySelectorAll('.js-add-to-cart').forEach(btn => {
+    btn.addEventListener('click', async function (e) {
+      e.stopPropagation();
+      const card = this.closest('.product-card');
+      const sizeDropdown = card.querySelector('.variant-select');
+
+      if (sizeDropdown && !sizeDropdown.value) {
+        alert('Please select a size first!');
+        return;
+      }
+
+      const matchedVariant = getSelectedVariant(card);
+      if (!matchedVariant) {
+        alert('Combination not available!');
+        return;
+      }
+
+      if (!matchedVariant.available) {
+        alert('This variant is currently Out of Stock!');
+        return;
+      }
+
+      // Main product ID initialization
+      const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
+
+      // Check gift rule condition
       const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const dropdownSelect = card.querySelector('.variant-select');
+      const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
+      const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
 
-      const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
-      const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
+      if (colorValue === 'black' && sizeValue === 'm') {
+        const FREE_GIFT_VARIANT_ID = 8565446934713;
+        console.log('[CartAPI] Gift condition matching perfectly!');
+        itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
+      }
 
-      // Filter matching variants array from JSON
-      return (
-        productData.variants.find((variant) => {
-          const vOpts = variant.options.map((o) => cleanVal(o));
-          if (val1 && val2) {
-            return vOpts.includes(val1) && vOpts.includes(val2);
-          }
-          return vOpts.includes(val1) || vOpts.includes(val2);
-        }) || productData.variants[0]
-      );
-    }
-
-    // 3. OPTION CHANGED & PRICE LIVE UPDATE
-    document.querySelectorAll('.product-card').forEach((card) => {
-      card.addEventListener('change', function (e) {
-        if (!e.target.classList.contains('js-option-selector')) return;
-
-        const matchedVariant = getSelectedVariant(card);
-        if (matchedVariant) {
-          card.querySelector('.js-price-display').textContent = matchedVariant.price;
-        }
-      });
-    });
-
-    // 4. AJAX SUBMIT AND GIFT VALIDATION
-    document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
-      btn.addEventListener('click', async function (e) {
-        e.stopPropagation();
-        const card = this.closest('.product-card');
-        const sizeDropdown = card.querySelector('.variant-select');
-
-        if (sizeDropdown && !sizeDropdown.value) {
-          alert('Please select a size first!');
-          return;
-        }
-
-        const matchedVariant = getSelectedVariant(card);
-        if (!matchedVariant) {
-          alert('Combination not available!');
-          return;
-        }
-
-        if (!matchedVariant.available) {
-          alert('This variant is currently Out of Stock!');
-          return;
-        }
-
-        // Main product ID initialization
-        const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
-
-        // Check gift rule condition
-        const radioChecked = card.querySelector('.color-swatch-input:checked');
-        const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
-        const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
-
-        if (colorValue === 'black' && sizeValue === 'm') {
-          const FREE_GIFT_VARIANT_ID = 8565446934713;
-          console.log('[CartAPI] Gift condition matching perfectly!');
-          itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
-        }
-
-        // XHR Post Request
-        btn.disabled = true;
-        this.querySelector('span').textContent = 'ADDING...';
-
-        try {
-          const response = await fetch('/cart/add.js', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: itemsPayload }),
-          });
-
-          if (!response.ok) throw new Error('API Rejection');
-
-          this.querySelector('span').textContent = 'ADDED ✓';
-          card.querySelector('.js-popup-backdrop').classList.remove('active');
-          document.body.style.overflow = '';
-
-          triggerCartDrawerOpen();
-        } catch (err) {
-          console.error('[CartAPI] Exception handling triggered:', err);
-          this.querySelector('span').textContent = 'TRY AGAIN';
-        } finally {
-          setTimeout(() => {
-            btn.disabled = false;
-            this.querySelector('span').textContent = 'ADD TO CART';
-          }, 1500);
-        }
-      });
-    });
-
-    // 5. THEME DRAWERS INTERACTION
-    async function triggerCartDrawerOpen() {
-      const themeDrawer = document.querySelector('cart-drawer');
-      if (!themeDrawer) return;
+      // XHR Post Request
+      btn.disabled = true;
+      this.querySelector('span').textContent = 'ADDING...';
 
       try {
-        const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
-        const sectionData = await refreshRes.json();
+        const response = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: itemsPayload })
+        });
 
-        if (typeof themeDrawer.renderContents === 'function') {
-          themeDrawer.renderContents({ sections: sectionData });
-        } else if (typeof themeDrawer.open === 'function') {
-          themeDrawer.open();
-        }
-      } catch (e) {
-        if (typeof themeDrawer.open === 'function') themeDrawer.open();
+        if (!response.ok) throw new Error('API Rejection');
+
+        this.querySelector('span').textContent = 'ADDED ✓';
+        card.querySelector('.js-popup-backdrop').classList.remove('active');
+        document.body.style.overflow = '';
+
+        triggerCartDrawerOpen();
+
+      } catch (err) {
+        console.error('[CartAPI] Exception handling triggered:', err);
+        this.querySelector('span').textContent = 'TRY AGAIN';
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          this.querySelector('span').textContent = 'ADD TO CART';
+        }, 1500);
       }
-    }
+    });
   });
-</script>
 
+  // 5. THEME DRAWERS INTERACTION
+  async function triggerCartDrawerOpen() {
+    const themeDrawer = document.querySelector('cart-drawer');
+    if (!themeDrawer) return;
+
+    try {
+      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+      const sectionData = await refreshRes.json();
+      
+      if (typeof themeDrawer.renderContents === 'function') {
+        themeDrawer.renderContents({ sections: sectionData });
+      } else if (typeof themeDrawer.open === 'function') {
+        themeDrawer.open();
+      }
+    } catch (e) {
+      if (typeof themeDrawer.open === 'function') themeDrawer.open();
+    }
+  }
+
+});
+</script>
+ 
 <style>
   /* ═══════════════════════════════════════════════════════════════════════════
      STRUCTURE STYLES
      ═══════════════════════════════════════════════════════════════════════════ */
-  .custom-product-cards {
-     padding: 60px 0;
-   }
-  .section-heading {
-     margin-bottom: 40px;
-     font-size:36px;
-     font-family:lustria;
-    }
-    .custom-product-inner{
-      padding:0px 40px;
-    }
-  .product-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 24px;
-  }
+  .custom-product-cards { padding: 60px 0; }
+  .section-heading { text-align: center; margin-bottom: 40px; }
+  .product-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
 
-  .product-card {
-     position: relative;
-     overflow: hidden;
-     height: 444px;
-
-  }
-  .product-card__image,
-  .product-card__image img{
-     width: 100%;
-    height: 100%;
-  }
-  .product-card__image img {
-    object-fit: cover;
-    display: block;
-    transition: transform .5s ease;
-   }
-
+  .product-card { position: relative; overflow: hidden; border-radius: 16px; height: 520px; cursor: pointer; }
+  .product-card__image, .product-card__image img { width: 100%; height: 100%; }
+  .product-card__image img { object-fit: cover; display: block; transition: transform .5s ease; }
+  .product-card:hover img { transform: scale(1.06); }
 
   .product-card__plus-icon {
-    position: absolute;
-    transform: translate(-50%, -50%);
-     width: 22px;
-    height: 22px;
-    background: #F8F8F8;
-     border-radius: 50%;
-     display: flex;
-      align-items: center;
-       justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-     z-index: 2;
-     cursor:pointer;
-      transition: all 0.35s ease;
+    position: absolute; transform: translate(-50%, -50%); width: 36px; height: 36px;
+    background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25); z-index: 2; pointer-events: none; transition: all 0.35s ease;
   }
-  
+  .product-card:hover .product-card__plus-icon { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 6px 22px rgba(0,0,0,0.35); }
+  .plus-symbol { color: #000000; font-size: 22px; font-weight: bold; line-height: 1; }
 
   /* ═══════════════════════════════════════════════════════════════════════════
      POPUP CARDS ELEMENTS
@@ -353,7 +278,7 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   .ppc-popup-backdrop.active { background: rgba(0, 0, 0, 0.65); visibility: visible; }
 
   .ppc-popup {
-    position: relative; background: #fff; color: #fff; 
+    position: relative; background: #1a1a1a; color: #fff; border-radius: 20px;
     max-width: 480px; width: 92%; max-height: 90vh; overflow-y: auto; padding: 32px 28px 28px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.08);
     transform: translateY(40px) scale(0.95); opacity: 0; transition: all 0.35s cubic-bezier(.22,.61,.36,1); cursor: default;
@@ -361,7 +286,7 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   .ppc-popup-backdrop.active .ppc-popup { transform: translateY(0) scale(1); opacity: 1; }
 
   .ppc-popup__close {
-    position: absolute; top: 12px; right: 14px; background: rgba); border: none;
+    position: absolute; top: 12px; right: 14px; background: rgba(255,255,255,0.1); border: none;
     color: #fff; font-size: 26px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: background 0.2s; line-height: 1;
   }
@@ -371,48 +296,39 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   .product-thumb { width: 90px; min-width: 90px; }
   .product-thumb img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; display: block; }
   .product-details { flex: 1; }
-  .product-details h3 { margin: 0 0 8px; color: #000; font-size: 16px; line-height: 1.2; font-weight:200;}
-  .product-desc {color: #000;
-    font-size: 14px;
-    line-height: 1.2;
-    margin-bottom: 10px;
-    letter-spacing: 0px;
-    font-weight: 200;}
-  .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px;font-family:lustria }
-
+  .product-details h3 { margin: 0 0 8px; color: #fff; font-size: 20px; line-height: 1.2; }
+  .product-desc { color: #bbb; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+  .product-price { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .product-vendor { color: #999; font-size: 13px; }
 
   .variant-selection-container { text-align: left; margin-bottom: 24px; }
   .variant-option-group { margin-bottom: 16px; }
-  .variant-label { display: block; font-size: 14px; color: #000; margin-bottom: 8px; font-weight: 500; }
-
-  .color-swatch-wrapper { display: flex; border: 1px solid #000; overflow: hidden; }
-  .color-swatch-item { flex: 1; text-align: center; position: relative; border-right: 1px solid #000; }
+  .variant-label { display: block; font-size: 14px; color: #fff; margin-bottom: 8px; font-weight: 500; }
+  
+  .color-swatch-wrapper { display: flex; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; overflow: hidden; }
+  .color-swatch-item { flex: 1; text-align: center; position: relative; border-right: 1px solid rgba(255, 255, 255, 0.25); }
   .color-swatch-item:last-child { border-right: none; }
   .color-swatch-input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-  .color-swatch-label { display: block; padding: 12px; background: transparent; color: #000; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .color-swatch-label { display: block; padding: 12px; background: transparent; color: #fff; font-size: 15px; cursor: pointer; transition: all 0.2s; }
   .color-swatch-input:checked + .color-swatch-label { background: #ffffff; color: #000000; font-weight: bold; }
 
   .size-dropdown-wrapper { position: relative; width: 100%; }
-  .variant-select { width: 100%; padding: 14px 40px 14px 16px;  border: 1px solid #000; background: transparent; color: #000; font-size: 15px; appearance: none; -webkit-appearance: none; cursor: pointer; }
-  .variant-select option { background: #fff; color: #000; }
-  .variant-select option:hover{
-    background:#000;
-    color:#fff;
-  }
+  .variant-select { width: 100%; padding: 14px 40px 14px 16px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font-size: 15px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .variant-select option { background: #1a1a1a; color: #fff; }
   .dropdown-chevron { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #fff; pointer-events: none; display: flex; align-items: center; }
 
-  .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;  transition: all 0.3s ease; }
+  .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; border-radius: 10px; transition: all 0.3s ease; }
   .product-btn:hover:not(:disabled) { background: #fff; color: #000; }
   .product-btn:disabled { opacity: 0.7; cursor: not-allowed; }
   .btn-arrow { font-size: 20px; line-height: 1; transition: transform 0.2s; }
-
+  .product-btn:hover:not(:disabled) .btn-arrow { transform: translateX(4px); }
 
   @media screen and (max-width: 768px) {
     .product-card__plus-icon { width: 32px; height: 32px; }
     .ppc-popup { max-width: 96%; padding: 24px 20px 20px; border-radius: 16px; }
   }
 </style>
-
+ 
 {% schema %}
 {
   "name": "Custom Product Cards",
@@ -479,7 +395,10 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   "presets": [
     {
       "name": "Custom Product Cards",
-      "blocks": [{ "type": "product_card" }, { "type": "product_card" }]
+      "blocks": [
+        { "type": "product_card" },
+        { "type": "product_card" }
+      ]
     }
   ]
 }
