@@ -20,7 +20,7 @@
               class="product-card__plus-icon"
               style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;"
             >
-              {% render 'plus-icon' %}
+          {% render 'plus-icon' %}
             </div>
 
             <div class="ppc-popup-backdrop js-popup-backdrop">
@@ -45,6 +45,7 @@
                         }}
                       </div>
                       <div class="product-price js-price-display">{{ product.price | money }}</div>
+                   
                     </div>
                   </div>
 
@@ -71,42 +72,32 @@
                                   <label
                                     for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
                                     class="color-swatch-label"
-                                    style="--swatch-color: {{ value.swatch.color }};"
                                   >
-                                    <span
-                                      class="color-dot"
-                                      style="background: {{ value.swatch.color }};"
-                                    ></span>
-                                    <span>{{ value }}</span>
+                                    {{- value -}}
                                   </label>
                                 </div>
                               {% endfor %}
                             </div>
                           {% else %}
-                            <div class="custom-dropdown-container">
-                              <input 
-                                type="hidden" 
-                                class="variant-select js-option-selector" 
-                                name="option-{{ block.id }}-{{ forloop.index0 }}" 
-                                value=""
-                              >
-                              
-                              <div class="custom-dropdown-header js-dropdown-toggle">
-                                <span class="js-dropdown-placeholder">Choose {{ option.name }}</span>
-                                <span class="dropdown-chevron">
-                                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                  </svg>
-                                </span>
-                              </div>
-                              
-                              <div class="custom-dropdown-list">
+                            <div class="size-dropdown-wrapper">
+                              <select class="variant-select js-option-selector">
+                                <option value="" disabled selected>Choose {{ option.name }}</option>
                                 {% for value in option.values %}
-                                  <div class="custom-dropdown-item" data-value="{{ value | escape }}">
-                                    {{ value }}
-                                  </div>
+                                  <option value="{{ value | escape }}">{{ value }}</option>
                                 {% endfor %}
-                              </div>
+                              </select>
+                              <span class="dropdown-chevron">
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="18"
+                                  height="18"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                >
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </span>
                             </div>
                           {% endif %}
                         </div>
@@ -150,101 +141,55 @@
       return (str || '').toLowerCase().trim();
     }
 
-    // 1. OPEN / CLOSE POPUP ACTIONS
-    document.querySelectorAll('.product-card').forEach((card) => {
-      const plusIcon = card.querySelector('.product-card__plus-icon');
-      if (plusIcon) {
-        plusIcon.addEventListener('click', (e) => {
-          e.stopPropagation();
-          card.querySelector('.js-popup-backdrop').classList.add('active');
-          document.body.style.overflow = 'hidden';
-        });
-      }
+ // 1. OPEN / CLOSE POPUP ACTIONS
+document.querySelectorAll('.product-card').forEach((card) => {
+  const plusIcon = card.querySelector('.product-card__plus-icon');
+  
+  if (plusIcon) {
+    plusIcon.addEventListener('click', (e) => {
+      // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
+      e.stopPropagation(); 
+      card.querySelector('.js-popup-backdrop').classList.add('active');
+      document.body.style.overflow = 'hidden';
     });
+  }
+});
 
-    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
-      closeTarget.addEventListener('click', function (e) {
-        e.stopPropagation();
-        this.closest('.js-popup-backdrop').classList.remove('active');
-        document.body.style.overflow = '';
-      });
-    });
+document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+  closeTarget.addEventListener('click', function (e) {
+    e.stopPropagation();
+    this.closest('.js-popup-backdrop').classList.remove('active');
+    document.body.style.overflow = '';
+  });
+});
 
-    // 2. CUSTOM DROPDOWN INTERACTION & VALUE BINDING JS
-    document.querySelectorAll('.custom-dropdown-container').forEach((dropdown) => {
-      const toggle = dropdown.querySelector('.js-dropdown-toggle');
-      const hiddenInput = dropdown.querySelector('.variant-select');
-      const placeholder = dropdown.querySelector('.js-dropdown-placeholder');
-      const items = dropdown.querySelectorAll('.custom-dropdown-item');
-
-      toggle.addEventListener('click', function (e) {
-        e.stopPropagation();
-        document.querySelectorAll('.custom-dropdown-container').forEach((other) => {
-          if (other !== dropdown) other.classList.remove('is-open');
-        });
-        dropdown.classList.toggle('is-open');
-      });
-
-      items.forEach((item) => {
-        item.addEventListener('click', function (e) {
-          e.stopPropagation();
-          const selectedValue = this.getAttribute('data-value');
-          
-          items.forEach(i => i.classList.remove('is-selected'));
-          this.classList.add('is-selected');
-          
-          placeholder.textContent = this.textContent.trim();
-          hiddenInput.value = selectedValue;
-          
-          dropdown.classList.remove('is-open');
-
-          // Trigger change event manually so product-card event listener catches it
-          const changeEvent = new Event('change', { bubbles: true });
-          hiddenInput.dispatchEvent(changeEvent);
-        });
-      });
-    });
-
-    document.addEventListener('click', () => {
-      document.querySelectorAll('.custom-dropdown-container').forEach((dropdown) => {
-        dropdown.classList.remove('is-open');
-      });
-    });
-
-    // 3. FIXED: ACCURATE MULTI-OPTION VARIANT MATCHING
+    // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
     function getSelectedVariant(card) {
       const jsonEl = card.querySelector('.js-raw-product-data');
       if (!jsonEl) return null;
 
       const productData = JSON.parse(jsonEl.textContent);
-      
-      // Get all active values
       const radioChecked = card.querySelector('.color-swatch-input:checked');
       const dropdownSelect = card.querySelector('.variant-select');
 
-      const activeColor = radioChecked ? cleanVal(radioChecked.value) : null;
-      const activeSize = dropdownSelect && dropdownSelect.value ? cleanVal(dropdownSelect.value) : null;
+      const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
+      const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
 
-      // Filter options dynamically
-      return productData.variants.find((variant) => {
-        const vOpts = variant.options.map((o) => cleanVal(o));
-        
-        // Agar dono options valid hain, toh dono match hone chahiye
-        if (activeColor && activeSize) {
-          return vOpts.includes(activeColor) && vOpts.includes(activeSize);
-        }
-        // Agar sirf ek option selected hai (jaise sirf Color ya sirf Size)
-        if (activeColor) return vOpts.includes(activeColor);
-        if (activeSize) return vOpts.includes(activeSize);
-        
-        return false;
-      });
+      // Filter matching variants array from JSON
+      return (
+        productData.variants.find((variant) => {
+          const vOpts = variant.options.map((o) => cleanVal(o));
+          if (val1 && val2) {
+            return vOpts.includes(val1) && vOpts.includes(val2);
+          }
+          return vOpts.includes(val1) || vOpts.includes(val2);
+        }) || productData.variants[0]
+      );
     }
 
-    // 4. OPTION CHANGED & PRICE LIVE UPDATE
+    // 3. OPTION CHANGED & PRICE LIVE UPDATE
     document.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('change', function (e) {
-        // Target dropdown input or radio inputs
         if (!e.target.classList.contains('js-option-selector')) return;
 
         const matchedVariant = getSelectedVariant(card);
@@ -254,7 +199,7 @@
       });
     });
 
-    // 5. AJAX SUBMIT AND GIFT VALIDATION
+    // 4. AJAX SUBMIT AND GIFT VALIDATION
     document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
       btn.addEventListener('click', async function (e) {
         e.stopPropagation();
@@ -277,8 +222,10 @@
           return;
         }
 
+        // Main product ID initialization
         const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
 
+        // Check gift rule condition
         const radioChecked = card.querySelector('.color-swatch-input:checked');
         const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
         const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
@@ -289,6 +236,7 @@
           itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
         }
 
+        // XHR Post Request
         btn.disabled = true;
         this.querySelector('span').textContent = 'ADDING...';
 
@@ -318,7 +266,7 @@
       });
     });
 
-    // 6. THEME DRAWERS INTERACTION
+    // 5. THEME DRAWERS INTERACTION
     async function triggerCartDrawerOpen() {
       const themeDrawer = document.querySelector('cart-drawer');
       if (!themeDrawer) return;
@@ -343,20 +291,57 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      STRUCTURE STYLES
      ═══════════════════════════════════════════════════════════════════════════ */
-  .custom-product-cards { padding: 60px 0; }
-  .section-heading { margin-bottom: 40px; font-size: 36px; font-family: lustria; }
-  .custom-product-inner { padding: 0px 40px; }
-  .product-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; }
-  
-  .product-card { position: relative; overflow: hidden; height: 444px; }
-  .product-card__image, .product-card__image img { width: 100%; height: 100%; }
-  .product-card__image img { object-fit: cover; display: block; transition: transform .5s ease; }
+  .custom-product-cards {
+     padding: 60px 0;
+   }
+  .section-heading {
+     margin-bottom: 40px;
+     font-size:36px;
+     font-family:lustria;
+    }
+    .custom-product-inner{
+      padding:0px 40px;
+    }
+  .product-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+  }
+
+  .product-card {
+     position: relative;
+     overflow: hidden;
+     height: 444px;
+
+  }
+  .product-card__image,
+  .product-card__image img{
+     width: 100%;
+    height: 100%;
+  }
+  .product-card__image img {
+    object-fit: cover;
+    display: block;
+    transition: transform .5s ease;
+   }
+
 
   .product-card__plus-icon {
-    position: absolute; transform: translate(-50%, -50%); width: 22px; height: 22px;
-    background: #F8F8F8; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25); z-index: 2; cursor: pointer; transition: all 0.35s ease;
+    position: absolute;
+    transform: translate(-50%, -50%);
+     width: 22px;
+    height: 22px;
+    background: #F8F8F8;
+     border-radius: 50%;
+     display: flex;
+      align-items: center;
+       justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+     z-index: 2;
+     cursor:pointer;
+      transition: all 0.35s ease;
   }
+  
 
   /* ═══════════════════════════════════════════════════════════════════════════
      POPUP CARDS ELEMENTS
@@ -368,26 +353,33 @@
   .ppc-popup-backdrop.active { background: rgba(0, 0, 0, 0.65); visibility: visible; }
 
   .ppc-popup {
-    position: relative; background: #fff; max-width: 480px; width: 92%; max-height: 90vh; overflow-y: auto; padding: 32px 28px 28px;
+    position: relative; background: #fff; color: #fff; 
+    max-width: 480px; width: 92%; max-height: 90vh; overflow-y: auto; padding: 32px 28px 28px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.08);
     transform: translateY(40px) scale(0.95); opacity: 0; transition: all 0.35s cubic-bezier(.22,.61,.36,1); cursor: default;
   }
   .ppc-popup-backdrop.active .ppc-popup { transform: translateY(0) scale(1); opacity: 1; }
 
   .ppc-popup__close {
-    position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.05); border: none;
-    color: #000; font-size: 26px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    position: absolute; top: 12px; right: 14px; background: rgba); border: none;
+    color: #fff; font-size: 26px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: background 0.2s; line-height: 1;
   }
-  .ppc-popup__close:hover { background: rgba(0,0,0,0.15); }
+  .ppc-popup__close:hover { background: rgba(255,255,255,0.25); }
 
   .product-info-top { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; text-align: left; }
   .product-thumb { width: 90px; min-width: 90px; }
   .product-thumb img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; display: block; }
   .product-details { flex: 1; }
-  .product-details h3 { margin: 0 0 8px; color: #000; font-size: 16px; line-height: 1.2; font-weight: 200; }
-  .product-desc { color: #000; font-size: 14px; line-height: 1.2; margin-bottom: 10px; letter-spacing: 0px; font-weight: 200; }
-  .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px; font-family: lustria; }
+  .product-details h3 { margin: 0 0 8px; color: #000; font-size: 16px; line-height: 1.2; font-weight:200;}
+  .product-desc {color: #000;
+    font-size: 14px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    letter-spacing: 0px;
+    font-weight: 200;}
+  .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px;font-family:lustria }
+
 
   .variant-selection-container { text-align: left; margin-bottom: 24px; }
   .variant-option-group { margin-bottom: 16px; }
@@ -397,97 +389,23 @@
   .color-swatch-item { flex: 1; text-align: center; position: relative; border-right: 1px solid #000; }
   .color-swatch-item:last-child { border-right: none; }
   .color-swatch-input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-  .color-swatch-label { position: relative; display: block; padding: 12px; background: transparent; color: #000; font-size: 15px; cursor: pointer; transition: all 0.2s; }
-  .color-swatch-input:checked + .color-swatch-label { background: #000000; color: #ffffff; font-weight: bold; }
+  .color-swatch-label { display: block; padding: 12px; background: transparent; color: #000; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .color-swatch-input:checked + .color-swatch-label { background: #ffffff; color: #000000; font-weight: bold; }
 
-  /* ═══════════════════════════════════════════════════════════════════════════
-     CUSTOM DROPDOWN PIXEL-PERFECT CSS (MATCHING THE REFERENCE IMAGE)
-     ═══════════════════════════════════════════════════════════════════════════ */
-  .custom-dropdown-container {
-    position: relative;
-    width: 100%;
-    user-select: none;
+  .size-dropdown-wrapper { position: relative; width: 100%; }
+  .variant-select { width: 100%; padding: 14px 40px 14px 16px;  border: 1px solid #000; background: transparent; color: #000; font-size: 15px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .variant-select option { background: #fff; color: #000; }
+  .variant-select option:hover{
+    background:#000;
+    color:#fff;
   }
+  .dropdown-chevron { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #fff; pointer-events: none; display: flex; align-items: center; }
 
-  .custom-dropdown-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 16px;
-    border: 1px solid #000;
-    background: #fff;
-    color: #000;
-    font-size: 15px;
-    cursor: pointer;
-    box-sizing: border-box;
-  }
-
-  .custom-dropdown-header .dropdown-chevron {
-    position: static;
-    transform: none;
-    color: #000;
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s ease;
-  }
-
-  /* Rotates chevron vector when list box opens */
-  .custom-dropdown-container.is-open .dropdown-chevron {
-    transform: rotate(180deg);
-  }
-
-  .custom-dropdown-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    border: 1px solid #000;
-    border-top: none;
-    background: #fff;
-    z-index: 99;
-    max-height: 220px;
-    overflow-y: auto;
-    display: none;
-    box-sizing: border-box;
-  }
-
-  .custom-dropdown-container.is-open .custom-dropdown-list {
-    display: block;
-  }
-
-  .custom-dropdown-item {
-    padding: 12px 16px;
-    color: #000;
-    font-size: 15px;
-    cursor: pointer;
-    text-align: center;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.15s ease;
-  }
-
-  .custom-dropdown-item:last-child {
-    border-bottom: none;
-  }
-
-  .custom-dropdown-item:hover {
-    background: #f8f8f8;
-  }
-
-  /* Exact style requested for selected active state */
-  .custom-dropdown-item.is-selected {
-    background: #000000 !important;
-    color: #ffffff !important;
-    font-weight: bold;
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════════════
-     BUTTONS ACTIONS
-     ═══════════════════════════════════════════════════════════════════════════ */
-  .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #000000; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease; }
-  .product-btn:hover:not(:disabled) { background: #ffffff; color: #000000; }
+  .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;  transition: all 0.3s ease; }
+  .product-btn:hover:not(:disabled) { background: #fff; color: #000; }
   .product-btn:disabled { opacity: 0.7; cursor: not-allowed; }
   .btn-arrow { font-size: 20px; line-height: 1; transition: transform 0.2s; }
-  .product-btn:hover:not(:disabled) .btn-arrow { transform: translateX(4px); }
+
 
   @media screen and (max-width: 768px) {
     .product-card__plus-icon { width: 32px; height: 32px; }
