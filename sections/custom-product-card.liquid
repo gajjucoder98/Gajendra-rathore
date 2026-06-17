@@ -7,9 +7,9 @@
     <div class="product-cards-grid">
       {% for block in section.blocks %}
         {% assign product = block.settings.product %}
- 
         {% if product != blank %}
-          <div class="product-card" data-block-id="{{ block.id }}" {{ block.shopify_attributes }}>
+          
+          <div class="product-card" data-block-id="{{ block.id }}">
             <div class="product-card__image">
               {% if block.settings.custom_image != blank %}
                 {{ block.settings.custom_image | image_url: width: 800 | image_tag: loading: 'lazy' }}
@@ -17,49 +17,48 @@
                 {{ product.featured_image | image_url: width: 800 | image_tag: loading: 'lazy' }}
               {% endif %}
             </div>
-
             <div class="product-card__plus-icon" style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;">
               <span class="plus-symbol">+</span>
             </div>
 
+            <!-- POPUP MODAL (Every Product has its own isolated HTML structure) -->
             <div class="ppc-popup-backdrop js-popup-backdrop">
               <div class="ppc-popup" onclick="event.stopPropagation();">
-                <button type="button" class="ppc-popup__close js-popup-close" aria-label="Close">&times;</button>
+                <button type="button" class="ppc-popup__close js-popup-close">&times;</button>
 
                 <div class="ppc-popup__body">
                   <div class="product-info-top">
                     <div class="product-thumb">
-                      {% if product.featured_image %}
-                        {{ product.featured_image | image_url: width: 200 | image_tag }}
-                      {% endif %}
+                      {% if product.featured_image %}{{ product.featured_image | image_url: width: 200 | image_tag }}{% endif %}
                     </div>
                     <div class="product-details">
                       <h3>{{ block.settings.custom_title | default: product.title }}</h3>
                       <div class="product-desc">{{ block.settings.custom_description | default: product.description | strip_html | truncate: 120 }}</div>
-                      <div class="product-price js-product-price">{{ product.price | money }}</div>
+                      <div class="product-price js-price-display">{{ product.price | money }}</div>
                       <div class="product-vendor">{{ product.vendor }}</div>
                     </div>
                   </div>
 
+                  <!-- Dynamic UI Option Groups -->
                   <div class="variant-selection-container">
                     {% unless product.has_only_default_variant %}
                       {% for option in product.options_with_values %}
-                        <div class="variant-option-group" data-option-index="{{ forloop.index0 }}">
+                        <div class="variant-option-group">
                           <label class="variant-label">{{ option.name }}</label>
                           
                           {% if option.name == 'Color' or option.name == 'color' or option.name == 'Colour' %}
                             <div class="color-swatch-wrapper">
                               {% for value in option.values %}
                                 <div class="color-swatch-item">
-                                  <input type="radio" id="popup-{{ block.id }}-{{ option.name }}-{{ forloop.index0 }}" name="popup-color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-variant-input" {% if forloop.first %}checked{% endif %}>
-                                  <label for="popup-{{ block.id }}-{{ option.name }}-{{ forloop.index0 }}" class="color-swatch-label">{{ value }}</label>
+                                  <input type="radio" id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" name="color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-option-selector" data-index="option{{ forloop.parentloop.index }}" {% if forloop.first %}checked{% endif %}>
+                                  <label for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" class="color-swatch-label">{{ value }}</label>
                                 </div>
                               {% endfor %}
                             </div>
                           {% else %}
                             <div class="size-dropdown-wrapper">
-                              <select class="variant-select js-variant-input">
-                                <option value="" disabled selected>Choose your {{ option.name | lowercase }}</option>
+                              <select class="variant-select js-option-selector" data-index="option{{ forloop.index }}">
+                                <option value="" disabled selected>Choose {{ option.name }}</option>
                                 {% for value in option.values %}
                                   <option value="{{ value | escape }}">{{ value }}</option>
                                 {% endfor %}
@@ -72,26 +71,30 @@
                     {% endunless %}
                   </div>
 
-                  <select class="js-master-variant-select" style="display:none;">
+                  <!-- HIDDEN ACTUAL NATIVE MASTER SELECT FOR VARIANT ID -->
+                  <select class="js-master-id-select" name="id" style="display: none;">
                     {% for variant in product.variants %}
                       <option value="{{ variant.id }}" 
-                        data-price="{{ variant.price | money }}" 
+                        data-price="{{ variant.price | money }}"
                         data-available="{{ variant.available }}"
-                        data-opt1="{{ variant.option1 | escape }}" 
-                        data-opt2="{{ variant.option2 | escape }}">
+                        data-option1="{{ variant.option1 | escape }}"
+                        data-option2="{{ variant.option2 | escape }}"
+                        data-option3="{{ variant.option3 | escape }}"
+                        {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %}>
                         {{ variant.title }}
                       </option>
                     {% endfor %}
                   </select>
 
-                  <button type="button" class="product-btn js-add-to-cart-btn">
+                  <button type="button" class="product-btn js-add-to-cart">
                     <span>ADD TO CART</span>
                     <span class="btn-arrow">→</span>
                   </button>
                 </div>
               </div>
             </div>
-            </div>
+
+          </div>
         {% endif %}
       {% endfor %}
     </div>
@@ -100,184 +103,156 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('[ProductCards] Minimized Object-Based Architecture Loaded.');
 
- 
+  // 1. OPEN / CLOSE POPUP ACTIONS
   document.querySelectorAll('.product-card').forEach(card => {
-    card.addEventListener('click', function () {
-      const backdrop = this.querySelector('.js-popup-backdrop');
-      if (backdrop) {
-        backdrop.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
+    card.addEventListener('click', () => {
+      card.querySelector('.js-popup-backdrop').classList.add('active');
+      document.body.style.overflow = 'hidden';
     });
   });
 
-  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach(closeEl => {
-    closeEl.addEventListener('click', function (e) {
+  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach(closeTarget => {
+    closeTarget.addEventListener('click', function (e) {
       e.stopPropagation();
-      const backdrop = this.closest('.js-popup-backdrop');
-      if (backdrop) {
-        backdrop.classList.remove('active');
-        document.body.style.overflow = '';
-      }
+      this.closest('.js-popup-backdrop').classList.remove('active');
+      document.body.style.overflow = '';
     });
   });
 
- 
+  // 2. VARIANT SELECTION & VALUE PICKER LOGIC
   document.querySelectorAll('.product-card').forEach(card => {
-    const masterSelect = card.querySelector('.js-master-variant-select');
+    const masterSelect = card.querySelector('.js-master-id-select');
     if (!masterSelect) return;
 
     card.addEventListener('change', function (e) {
-      if (!e.target.classList.contains('js-variant-input')) return;
+      if (!e.target.classList.contains('js-option-selector')) return;
 
-    
-      const selectedOpts = [];
-      
-   
-      const checkedRadio = card.querySelector('.color-swatch-input:checked');
-      if (checkedRadio) selectedOpts.push(checkedRadio.value.toLowerCase().trim());
-      
-    
-      const selectedSelect = card.querySelector('.variant-select');
-      if (selectedSelect && selectedSelect.value) selectedOpts.push(selectedSelect.value.toLowerCase().trim());
+      // Current User Selection collect krna
+      const radioChecked = card.querySelector('.color-swatch-input:checked');
+      const dropdownSelect = card.querySelector('.variant-select');
 
-    
+      const val1 = radioChecked ? radioChecked.value.toLowerCase().trim() : '';
+      const val2 = dropdownSelect ? dropdownSelect.value.toLowerCase().trim() : '';
+
+      // Master select options me se perfect matching row dhundna
       let matchedOption = null;
       Array.from(masterSelect.options).forEach(opt => {
-        const o1 = (opt.dataset.opt1 || '').toLowerCase().trim();
-        const o2 = (opt.dataset.opt2 || '').toLowerCase().trim();
+        const o1 = (opt.dataset.option1 || '').toLowerCase().trim();
+        const o2 = (opt.dataset.option2 || '').toLowerCase().trim();
 
-       
-        const matchAll = selectedOpts.every(val => val === o1 || val === o2);
-        if (matchAll && selectedOpts.length > 0) {
+        // Shopify dynamic check configuration
+        if ((o1 === val1 && o2 === val2) || (o1 === val2 && o2 === val1) || (!o2 && (o1 === val1 || o1 === val2))) {
           matchedOption = opt;
         }
       });
 
-      // Update Price display dynamically
+      // Agar match mil gya to master select value update kardo and price badlo
       if (matchedOption) {
-        const priceEl = card.querySelector('.js-product-price');
-        if (priceEl) priceEl.textContent = matchedOption.dataset.price;
-        console.log('[ProductCards] Dynamic Match Found Variant ID:', matchedOption.value);
+        masterSelect.value = matchedOption.value;
+        card.querySelector('.js-price-display').textContent = matchedOption.dataset.price;
       }
     });
   });
 
-  // Ajax Cart Push Function
-  async function pushToCart(items) {
-    const res = await fetch('/cart/add.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items })
-    });
-    if (!res.ok) throw new Error('Shopify Reject');
-    return res.json();
-  }
-
-  // Handle Add to Cart Click
-  document.querySelectorAll('.js-add-to-cart-btn').forEach(btn => {
+  // 3. CART PUSH & CONDITIONAL FREE GIFT RULE
+  document.querySelectorAll('.js-add-to-cart').forEach(btn => {
     btn.addEventListener('click', async function (e) {
       e.stopPropagation();
       const card = this.closest('.product-card');
-      const masterSelect = card.querySelector('.js-master-variant-select');
-      
-      if (!masterSelect) return;
+      const masterSelect = card.querySelector('.js-master-id-select');
+      const selectedOption = masterSelect.options[masterSelect.selectedIndex];
 
-      // Detect Selected Values
-      const radio = card.querySelector('.color-swatch-input:checked');
-      const select = card.querySelector('.variant-select');
-      
-      const colVal = radio ? radio.value : '';
-      const sizVal = select ? select.value : '';
-
-      if (select && !sizVal) {
+      // Safe checks
+      const sizeDropdown = card.querySelector('.variant-select');
+      if (sizeDropdown && !sizeDropdown.value) {
         alert('Please select a size first!');
         return;
       }
 
-      // Find current selected option element
-      let finalVariantId = masterSelect.value; // default fallback
-      let isAvailable = true;
-
-      if (select || radio) {
-        let matched = null;
-        Array.from(masterSelect.options).forEach(opt => {
-          const o1 = (opt.dataset.opt1 || '').toLowerCase().trim();
-          const o2 = (opt.dataset.opt2 || '').toLowerCase().trim();
-          const target1 = colVal.toLowerCase().trim();
-          const target2 = sizVal.toLowerCase().trim();
-
-          if ((opt.dataset.opt2 && ((o1===target1 && o2===target2) || (o1===target2 && o2===target1))) || 
-              (!opt.dataset.opt2 && (o1===target1 || o1===target2))) {
-            matched = opt;
-          }
-        });
-
-        if (matched) {
-          finalVariantId = matched.value;
-          isAvailable = matched.dataset.available === 'true';
-        } else {
-          alert('Combination not available!'); return;
-        }
+      if (selectedOption.dataset.available === 'false') {
+        alert('This variant is currently Out of Stock!');
+        return;
       }
 
-      if (!isAvailable) {
-        alert('Out of stock!'); return;
+      // ── Step A: Get Selected Variant ID ──
+      const activeVariantId = Number(masterSelect.value);
+      const itemsPayload = [{ id: activeVariantId, quantity: 1 }];
+
+      // ── Step B: Check Rule Condition (Color: Black & Size: M) ──
+      const radioChecked = card.querySelector('.color-swatch-input:checked');
+      const colorValue = radioChecked ? radioChecked.value.toLowerCase().trim() : '';
+      const sizeValue = sizeDropdown ? sizeDropdown.value.toLowerCase().trim() : '';
+
+      if (colorValue === 'black' && sizeValue === 'm') {
+        const FREE_GIFT_VARIANT_ID = 8565446934713;
+        console.log('[CartAPI] Gift match rule success! Pushing Free Product ID.');
+        itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
       }
 
-      // Add to cart animation state
+      // ── Step C: Push Array to /cart/add.js ──
       btn.disabled = true;
-      btn.querySelector('span').textContent = 'ADDING...';
+      this.querySelector('span').textContent = 'ADDING...';
 
       try {
-        const payload = [{ id: Number(finalVariantId), quantity: 1 }];
-        const FREE_GIFT_ID = 8565446934713;
+        const response = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: itemsPayload })
+        });
 
-        // Free gift match logic (Color Black + Size M)
-        if (colVal.toLowerCase().trim() === 'black' && sizVal.toLowerCase().trim() === 'm') {
-          console.log('[ProductCards] Gift Rules Triggered!');
-          payload.push({ id: Number(FREE_GIFT_ID), quantity: 1 });
-        }
+        if (!response.ok) throw new Error('Add Failed');
 
-        await pushToCart(payload);
-        btn.querySelector('span').textContent = 'ADDED ✓';
-
-        // Trigger native theme cart update behaviors
-        const drawer = document.querySelector('cart-drawer');
-        if (drawer && typeof drawer.renderContents === 'function') {
-          const res = await fetch('/?sections=cart-drawer,cart-icon-bubble');
-          const data = await res.json();
-          drawer.renderContents({ sections: data });
-        } else if (drawer && typeof drawer.open === 'function') {
-          drawer.open();
-        }
-
-        // Close active popup
+        this.querySelector('span').textContent = 'ADDED ✓';
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
+        // ── Step D: Open Theme Cart Drawer ──
+        triggerCartDrawerOpen();
+
       } catch (err) {
-        console.error('[ProductCards] Submit Error:', err);
-        btn.querySelector('span').textContent = 'TRY AGAIN';
+        console.error('[CartAPI] Process Interrupted:', err);
+        this.querySelector('span').textContent = 'TRY AGAIN';
       } finally {
         setTimeout(() => {
           btn.disabled = false;
-          btn.querySelector('span').textContent = 'ADD TO CART';
+          this.querySelector('span').textContent = 'ADD TO CART';
         }, 1500);
       }
     });
   });
+
+  // 4. THEME DRAWER REFRESH & OPEN HANDLER (Isolated)
+  async function triggerCartDrawerOpen() {
+    const themeDrawer = document.querySelector('cart-drawer');
+    if (!themeDrawer) return;
+
+    try {
+      // Cart Bubble update krna aur Drawer sections fresh hit krna
+      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+      const sectionData = await refreshRes.json();
+      
+      if (typeof themeDrawer.renderContents === 'function') {
+        themeDrawer.renderContents({ sections: sectionData });
+      } else if (typeof themeDrawer.open === 'function') {
+        themeDrawer.open();
+      }
+    } catch (e) {
+      // Backup simple execution style
+      if (typeof themeDrawer.open === 'function') themeDrawer.open();
+    }
+  }
+
 });
 </script>
  
 <style>
-
+  /* ═══════════════════════════════════════════════════════════════════════════
+     STRUCTURE STYLES
+     ═══════════════════════════════════════════════════════════════════════════ */
   .custom-product-cards { padding: 60px 0; }
   .section-heading { text-align: center; margin-bottom: 40px; }
   .product-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-
 
   .product-card { position: relative; overflow: hidden; border-radius: 16px; height: 520px; cursor: pointer; }
   .product-card__image, .product-card__image img { width: 100%; height: 100%; }
@@ -292,7 +267,9 @@ document.addEventListener('DOMContentLoaded', function () {
   .product-card:hover .product-card__plus-icon { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 6px 22px rgba(0,0,0,0.35); }
   .plus-symbol { color: #000000; font-size: 22px; font-weight: bold; line-height: 1; }
 
- 
+  /* ═══════════════════════════════════════════════════════════════════════════
+     POPUP CARDS ELEMENTS
+     ═══════════════════════════════════════════════════════════════════════════ */
   .ppc-popup-backdrop {
     position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0);
     display: flex; align-items: center; justify-content: center; visibility: hidden; transition: all 0.35s ease;
@@ -314,7 +291,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   .ppc-popup__close:hover { background: rgba(255,255,255,0.25); }
 
-
   .product-info-top { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; text-align: left; }
   .product-thumb { width: 90px; min-width: 90px; }
   .product-thumb img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; display: block; }
@@ -323,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function () {
   .product-desc { color: #bbb; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
   .product-price { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   .product-vendor { color: #999; font-size: 13px; }
-
 
   .variant-selection-container { text-align: left; margin-bottom: 24px; }
   .variant-option-group { margin-bottom: 16px; }
@@ -341,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
   .variant-select option { background: #1a1a1a; color: #fff; }
   .dropdown-chevron { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #fff; pointer-events: none; display: flex; align-items: center; }
 
-  /* Button layout */
   .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; border-radius: 10px; transition: all 0.3s ease; }
   .product-btn:hover:not(:disabled) { background: #fff; color: #000; }
   .product-btn:disabled { opacity: 0.7; cursor: not-allowed; }
