@@ -3,12 +3,11 @@
     {% if section.settings.heading != blank %}
       <h2 class="section-heading">{{ section.settings.heading }}</h2>
     {% endif %}
- 
+
     <div class="product-cards-grid">
       {% for block in section.blocks %}
         {% assign product = block.settings.product %}
         {% if product != blank %}
-          
           <div class="product-card" data-block-id="{{ block.id }}">
             <div class="product-card__image">
               {% if block.settings.custom_image != blank %}
@@ -17,7 +16,10 @@
                 {{ product.featured_image | image_url: width: 800 | image_tag: loading: 'lazy' }}
               {% endif %}
             </div>
-            <div class="product-card__plus-icon" style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;">
+            <div
+              class="product-card__plus-icon"
+              style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;"
+            >
               <span class="plus-symbol">{% render 'plus-icon' %}</span>
             </div>
 
@@ -28,11 +30,20 @@
                 <div class="ppc-popup__body">
                   <div class="product-info-top">
                     <div class="product-thumb">
-                      {% if product.featured_image %}{{ product.featured_image | image_url: width: 200 | image_tag }}{% endif %}
+                      {% if product.featured_image -%}
+                        {{- product.featured_image | image_url: width: 200 | image_tag -}}
+                      {%- endif %}
                     </div>
                     <div class="product-details">
                       <h3>{{ block.settings.custom_title | default: product.title }}</h3>
-                      <div class="product-desc">{{ block.settings.custom_description | default: product.description | strip_html | truncate: 120 }}</div>
+                      <div class="product-desc">
+                        {{
+                          block.settings.custom_description
+                          | default: product.description
+                          | strip_html
+                          | truncate: 120
+                        }}
+                      </div>
                       <div class="product-price js-price-display">{{ product.price | money }}</div>
                       <div class="product-vendor">{{ product.vendor }}</div>
                     </div>
@@ -43,13 +54,27 @@
                       {% for option in product.options_with_values %}
                         <div class="variant-option-group">
                           <label class="variant-label">{{ option.name }}</label>
-                          
+
                           {% if option.name == 'Color' or option.name == 'color' or option.name == 'Colour' %}
                             <div class="color-swatch-wrapper">
                               {% for value in option.values %}
                                 <div class="color-swatch-item">
-                                  <input type="radio" id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" name="color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-option-selector" {% if forloop.first %}checked{% endif %}>
-                                  <label for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" class="color-swatch-label">{{ value }}</label>
+                                  <input
+                                    type="radio"
+                                    id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
+                                    name="color-{{ block.id }}"
+                                    value="{{ value | escape }}"
+                                    class="color-swatch-input js-option-selector"
+                                    {% if forloop.first %}
+                                      checked
+                                    {% endif %}
+                                  >
+                                  <label
+                                    for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
+                                    class="color-swatch-label"
+                                  >
+                                    {{- value -}}
+                                  </label>
                                 </div>
                               {% endfor %}
                             </div>
@@ -61,7 +86,18 @@
                                   <option value="{{ value | escape }}">{{ value }}</option>
                                 {% endfor %}
                               </select>
-                              <span class="dropdown-chevron"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                              <span class="dropdown-chevron">
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="18"
+                                  height="18"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                >
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </span>
                             </div>
                           {% endif %}
                         </div>
@@ -91,7 +127,6 @@
                 ]
               }
             </script>
-
           </div>
         {% endif %}
       {% endfor %}
@@ -100,153 +135,152 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    // Format Helper
+    function cleanVal(str) {
+      return (str || '').toLowerCase().trim();
+    }
 
-  // Format Helper
-  function cleanVal(str) {
-    return (str || '').toLowerCase().trim();
-  }
-
-  // 1. OPEN / CLOSE POPUP ACTIONS
-  document.querySelectorAll('.product-card').forEach(card => {
-    card.addEventListener('click', () => {
-      card.querySelector('.js-popup-backdrop').classList.add('active');
-      document.body.style.overflow = 'hidden';
+    // 1. OPEN / CLOSE POPUP ACTIONS
+    document.querySelectorAll('.product-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        card.querySelector('.js-popup-backdrop').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
     });
-  });
 
-  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach(closeTarget => {
-    closeTarget.addEventListener('click', function (e) {
-      e.stopPropagation();
-      this.closest('.js-popup-backdrop').classList.remove('active');
-      document.body.style.overflow = '';
+    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+      closeTarget.addEventListener('click', function (e) {
+        e.stopPropagation();
+        this.closest('.js-popup-backdrop').classList.remove('active');
+        document.body.style.overflow = '';
+      });
     });
-  });
 
-  // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
-  function getSelectedVariant(card) {
-    const jsonEl = card.querySelector('.js-raw-product-data');
-    if (!jsonEl) return null;
+    // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
+    function getSelectedVariant(card) {
+      const jsonEl = card.querySelector('.js-raw-product-data');
+      if (!jsonEl) return null;
 
-    const productData = JSON.parse(jsonEl.textContent);
-    const radioChecked = card.querySelector('.color-swatch-input:checked');
-    const dropdownSelect = card.querySelector('.variant-select');
-
-    const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
-    const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
-
-    // Filter matching variants array from JSON
-    return productData.variants.find(variant => {
-      const vOpts = variant.options.map(o => cleanVal(o));
-      if (val1 && val2) {
-        return vOpts.includes(val1) && vOpts.includes(val2);
-      }
-      return vOpts.includes(val1) || vOpts.includes(val2);
-    }) || productData.variants[0];
-  }
-
-  // 3. OPTION CHANGED & PRICE LIVE UPDATE
-  document.querySelectorAll('.product-card').forEach(card => {
-    card.addEventListener('change', function (e) {
-      if (!e.target.classList.contains('js-option-selector')) return;
-
-      const matchedVariant = getSelectedVariant(card);
-      if (matchedVariant) {
-        card.querySelector('.js-price-display').textContent = matchedVariant.price;
-      }
-    });
-  });
-
-  // 4. AJAX SUBMIT AND GIFT VALIDATION
-  document.querySelectorAll('.js-add-to-cart').forEach(btn => {
-    btn.addEventListener('click', async function (e) {
-      e.stopPropagation();
-      const card = this.closest('.product-card');
-      const sizeDropdown = card.querySelector('.variant-select');
-
-      if (sizeDropdown && !sizeDropdown.value) {
-        alert('Please select a size first!');
-        return;
-      }
-
-      const matchedVariant = getSelectedVariant(card);
-      if (!matchedVariant) {
-        alert('Combination not available!');
-        return;
-      }
-
-      if (!matchedVariant.available) {
-        alert('This variant is currently Out of Stock!');
-        return;
-      }
-
-      // Main product ID initialization
-      const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
-
-      // Check gift rule condition
+      const productData = JSON.parse(jsonEl.textContent);
       const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
-      const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
+      const dropdownSelect = card.querySelector('.variant-select');
 
-      if (colorValue === 'black' && sizeValue === 'm') {
-        const FREE_GIFT_VARIANT_ID = 8565446934713;
-        console.log('[CartAPI] Gift condition matching perfectly!');
-        itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
-      }
+      const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
+      const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
 
-      // XHR Post Request
-      btn.disabled = true;
-      this.querySelector('span').textContent = 'ADDING...';
+      // Filter matching variants array from JSON
+      return (
+        productData.variants.find((variant) => {
+          const vOpts = variant.options.map((o) => cleanVal(o));
+          if (val1 && val2) {
+            return vOpts.includes(val1) && vOpts.includes(val2);
+          }
+          return vOpts.includes(val1) || vOpts.includes(val2);
+        }) || productData.variants[0]
+      );
+    }
+
+    // 3. OPTION CHANGED & PRICE LIVE UPDATE
+    document.querySelectorAll('.product-card').forEach((card) => {
+      card.addEventListener('change', function (e) {
+        if (!e.target.classList.contains('js-option-selector')) return;
+
+        const matchedVariant = getSelectedVariant(card);
+        if (matchedVariant) {
+          card.querySelector('.js-price-display').textContent = matchedVariant.price;
+        }
+      });
+    });
+
+    // 4. AJAX SUBMIT AND GIFT VALIDATION
+    document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
+      btn.addEventListener('click', async function (e) {
+        e.stopPropagation();
+        const card = this.closest('.product-card');
+        const sizeDropdown = card.querySelector('.variant-select');
+
+        if (sizeDropdown && !sizeDropdown.value) {
+          alert('Please select a size first!');
+          return;
+        }
+
+        const matchedVariant = getSelectedVariant(card);
+        if (!matchedVariant) {
+          alert('Combination not available!');
+          return;
+        }
+
+        if (!matchedVariant.available) {
+          alert('This variant is currently Out of Stock!');
+          return;
+        }
+
+        // Main product ID initialization
+        const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
+
+        // Check gift rule condition
+        const radioChecked = card.querySelector('.color-swatch-input:checked');
+        const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
+        const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
+
+        if (colorValue === 'black' && sizeValue === 'm') {
+          const FREE_GIFT_VARIANT_ID = 8565446934713;
+          console.log('[CartAPI] Gift condition matching perfectly!');
+          itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
+        }
+
+        // XHR Post Request
+        btn.disabled = true;
+        this.querySelector('span').textContent = 'ADDING...';
+
+        try {
+          const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: itemsPayload }),
+          });
+
+          if (!response.ok) throw new Error('API Rejection');
+
+          this.querySelector('span').textContent = 'ADDED ✓';
+          card.querySelector('.js-popup-backdrop').classList.remove('active');
+          document.body.style.overflow = '';
+
+          triggerCartDrawerOpen();
+        } catch (err) {
+          console.error('[CartAPI] Exception handling triggered:', err);
+          this.querySelector('span').textContent = 'TRY AGAIN';
+        } finally {
+          setTimeout(() => {
+            btn.disabled = false;
+            this.querySelector('span').textContent = 'ADD TO CART';
+          }, 1500);
+        }
+      });
+    });
+
+    // 5. THEME DRAWERS INTERACTION
+    async function triggerCartDrawerOpen() {
+      const themeDrawer = document.querySelector('cart-drawer');
+      if (!themeDrawer) return;
 
       try {
-        const response = await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: itemsPayload })
-        });
+        const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+        const sectionData = await refreshRes.json();
 
-        if (!response.ok) throw new Error('API Rejection');
-
-        this.querySelector('span').textContent = 'ADDED ✓';
-        card.querySelector('.js-popup-backdrop').classList.remove('active');
-        document.body.style.overflow = '';
-
-        triggerCartDrawerOpen();
-
-      } catch (err) {
-        console.error('[CartAPI] Exception handling triggered:', err);
-        this.querySelector('span').textContent = 'TRY AGAIN';
-      } finally {
-        setTimeout(() => {
-          btn.disabled = false;
-          this.querySelector('span').textContent = 'ADD TO CART';
-        }, 1500);
+        if (typeof themeDrawer.renderContents === 'function') {
+          themeDrawer.renderContents({ sections: sectionData });
+        } else if (typeof themeDrawer.open === 'function') {
+          themeDrawer.open();
+        }
+      } catch (e) {
+        if (typeof themeDrawer.open === 'function') themeDrawer.open();
       }
-    });
-  });
-
-  // 5. THEME DRAWERS INTERACTION
-  async function triggerCartDrawerOpen() {
-    const themeDrawer = document.querySelector('cart-drawer');
-    if (!themeDrawer) return;
-
-    try {
-      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
-      const sectionData = await refreshRes.json();
-      
-      if (typeof themeDrawer.renderContents === 'function') {
-        themeDrawer.renderContents({ sections: sectionData });
-      } else if (typeof themeDrawer.open === 'function') {
-        themeDrawer.open();
-      }
-    } catch (e) {
-      if (typeof themeDrawer.open === 'function') themeDrawer.open();
     }
-  }
-
-});
+  });
 </script>
- 
+
 <style>
   /* ═══════════════════════════════════════════════════════════════════════════
      STRUCTURE STYLES
@@ -254,42 +288,52 @@ document.addEventListener('DOMContentLoaded', function () {
   .custom-product-cards {
      padding: 60px 0;
    }
-  .section-heading { 
+  .section-heading {
      margin-bottom: 40px;
      font-size:36px;
-     font-family:lustria; 
+     font-family:lustria;
     }
     .custom-product-inner{
       padding:0px 40px;
     }
-  .product-cards-grid { 
+  .product-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 24px; 
+    gap: 24px;
   }
 
   .product-card {
-     position: relative; 
-     overflow: hidden; 
+     position: relative;
+     overflow: hidden;
      height: 444px;
     cursor: pointer;
   }
   .product-card__image,
   .product-card__image img{
      width: 100%;
-    height: 100%; 
+    height: 100%;
   }
-  .product-card__image img { 
+  .product-card__image img {
     object-fit: cover;
     display: block;
     transition: transform .5s ease;
    }
-  
+
 
   .product-card__plus-icon {
-    position: absolute; transform: translate(-50%, -50%); width: 36px; height: 36px;
-    background: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25); z-index: 2; pointer-events: none; transition: all 0.35s ease;
+    position: absolute;
+    transform: translate(-50%, -50%);
+     width: 22px;
+    height: 22px;
+    background: #F8F8F8;
+     border-radius: 50%;
+     display: flex;
+      align-items: center;
+       justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+     z-index: 2;
+
+      transition: all 0.35s ease;
   }
   .product-card:hover .product-card__plus-icon { transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 6px 22px rgba(0,0,0,0.35); }
   .plus-symbol { color: #000000; font-size: 22px; font-weight: bold; line-height: 1; }
@@ -330,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
   .variant-selection-container { text-align: left; margin-bottom: 24px; }
   .variant-option-group { margin-bottom: 16px; }
   .variant-label { display: block; font-size: 14px; color: #fff; margin-bottom: 8px; font-weight: 500; }
-  
+
   .color-swatch-wrapper { display: flex; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; overflow: hidden; }
   .color-swatch-item { flex: 1; text-align: center; position: relative; border-right: 1px solid rgba(255, 255, 255, 0.25); }
   .color-swatch-item:last-child { border-right: none; }
@@ -354,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .ppc-popup { max-width: 96%; padding: 24px 20px 20px; border-radius: 16px; }
   }
 </style>
- 
+
 {% schema %}
 {
   "name": "Custom Product Cards",
@@ -421,10 +465,7 @@ document.addEventListener('DOMContentLoaded', function () {
   "presets": [
     {
       "name": "Custom Product Cards",
-      "blocks": [
-        { "type": "product_card" },
-        { "type": "product_card" }
-      ]
+      "blocks": [{ "type": "product_card" }, { "type": "product_card" }]
     }
   ]
 }
