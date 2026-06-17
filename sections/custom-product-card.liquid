@@ -67,10 +67,31 @@
         "hasVariants": {{ product.has_only_default_variant | json }},
         "variants": [
           {% for variant in product.variants %}
+            {%- assign v_color = "" -%}
+            {%- assign v_size = "" -%}
+            
+            {% comment %} Dynamic check for correct mapping based on options title {% endcomment %}
+            {%- if product.options[0] == "Color" or product.options[0] == "color" or product.options[0] == "Colour" -%}
+              {%- assign v_color = variant.option1 -%}
+            {%- elsif product.options[0] == "Size" or product.options[0] == "size" -%}
+              {%- assign v_size = variant.option1 -%}
+            {%- endif -%}
+
+            {%- if product.options[1] == "Color" or product.options[1] == "color" or product.options[1] == "Colour" -%}
+              {%- assign v_color = variant.option2 -%}
+            {%- elsif product.options[1] == "Size" or product.options[1] == "size" -%}
+              {%- assign v_size = variant.option2 -%}
+            {%- endif -%}
+
+            {% comment %} Fallback structure if options are named differently {% endcomment %}
+            {%- if v_color == blank and v_size == blank -%}
+              {%- assign v_color = variant.option1 -%}
+              {%- assign v_size = variant.option2 -%}
+            {%- endif -%}
             {
               "id": {{ variant.id }},
-              "color": {{ variant.option1 | json }},
-              "size": {{ variant.option2 | json }},
+              "color": {{ v_color | json }},
+              "size": {{ v_size | json }},
               "price": {{ variant.price | money | json }},
               "available": {{ variant.available | json }}
             }{% unless forloop.last %},{% endunless %}
@@ -84,7 +105,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  console.log('[ProductCards] Init: DOM Content Loaded Successfully.');
+  console.log('[ProductCards] Init: Dynamic Mapping Active.');
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -102,6 +123,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (size) {
       return variants.find(v => normalize(v.size) === normalize(size)) || null;
+    }
+    if (color) {
+      return variants.find(v => normalize(v.color) === normalize(color)) || null;
     }
     return variants[0] || null;
   }
@@ -124,22 +148,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // ─── Open popup ─────────────────────────────────────────────────────────────
 
   function openPopup(blockId) {
-    console.log('[ProductCards] Attempting to open popup for block ID:', blockId);
+    console.log('[ProductCards] Opening layout for block ID:', blockId);
     const jsonEl = document.querySelector('.ppc-product-data[data-block-id="' + blockId + '"]');
-    if (!jsonEl) {
-      console.error('[ProductCards] Error: JSON data element not found for block ID:', blockId);
-      return;
-    }
+    if (!jsonEl) return;
 
     try { 
       currentData = JSON.parse(jsonEl.textContent); 
-      console.log('[ProductCards] Loaded Product Data:', currentData);
+      console.log('[ProductCards] Loaded Fixed JSON Data:', currentData);
     } catch (e) { 
-      console.error('[ProductCards] Error: Failed to parse Product JSON Data:', e);
+      console.error('[ProductCards] JSON parsing crash:', e);
       return; 
     }
 
-    // Fill static fields
     thumbEl.innerHTML  = currentData.image
       ? '<img src="' + currentData.image + '" alt="' + currentData.title + '">'
       : '';
@@ -149,25 +169,18 @@ document.addEventListener('DOMContentLoaded', function () {
     vendorEl.textContent = currentData.vendor;
     addBtn.dataset.productId = currentData.productId;
 
-    // Build variant selectors (only when product has real variants)
     variantsEl.innerHTML = '';
     if (currentData.variants && currentData.variants.length > 0) {
-      // product.has_only_default_variant false hone par hi options dropdown dikhayen
       if (currentData.hasVariants === false) {
-        console.log('[ProductCards] Product has variants, rendering UI dropdowns...');
         variantsEl.innerHTML = buildVariantHTML(blockId, currentData.variants);
-      } else {
-        console.log('[ProductCards] Product uses default single variant. Skipping UI dropdowns.');
       }
     }
 
-    // Show
     backdrop.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
 
   function closePopup() {
-    console.log('[ProductCards] Closing popup.');
     backdrop.classList.remove('active');
     document.body.style.overflow = '';
     currentData = null;
@@ -178,16 +191,17 @@ document.addEventListener('DOMContentLoaded', function () {
   function buildVariantHTML(blockId, variants) {
     const colors = [];
     const sizes  = [];
+    
     variants.forEach(v => {
       if (v.color && colors.indexOf(v.color) === -1) colors.push(v.color);
       if (v.size  && sizes.indexOf(v.size)   === -1) sizes.push(v.size);
     });
 
-    console.log('[ProductCards] Extracted Option Values -> Colors:', colors, '| Sizes:', sizes);
+    console.log('[ProductCards] Fixed UI Elements Lists -> Colors:', colors, '| Sizes:', sizes);
 
     let html = '<div class="variant-selection-container">';
 
-    // Color swatches
+    // Color swatches UI Layout
     if (colors.length) {
       html += '<div class="variant-option-group">';
       html += '<label class="variant-label">Color</label>';
@@ -202,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
       html += '</div></div>';
     }
 
-    // Size dropdown
+    // Size dropdown UI Layout
     if (sizes.length) {
       html += '<div class="variant-option-group">';
       html += '<label class="variant-label">Size</label>';
@@ -231,13 +245,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const color = colorInput ? colorInput.value : '';
     const size  = sizeSelect ? sizeSelect.value : '';
 
-    if (sizeSelect && !size) return; // wait until size chosen
+    if (sizeSelect && !size) return;
 
     const matched = findVariant(currentData.variants, color, size);
-    if (matched) {
-      console.log('[ProductCards] Price updated to:', matched.price);
-      priceEl.textContent = matched.price;
-    }
+    if (matched) priceEl.textContent = matched.price;
   }
 
   // ─── Event: variant change inside popup ─────────────────────────────────────
@@ -245,7 +256,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('change', function (e) {
     if (e.target.classList.contains('popup-color-input') ||
         e.target.classList.contains('popup-size-select')) {
-      console.log('[ProductCards] Variant option changed by user.');
       updatePopupPrice();
     }
   });
@@ -253,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // ─── Cart helpers ───────────────────────────────────────────────────────────
 
   async function addToCart(items) {
-    console.log('[ProductCards] Sending POST to /cart/add.js with payload:', JSON.stringify({ items: items }));
     const res = await fetch('/cart/add.js', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -261,14 +270,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.error('[ProductCards] Shopify Cart API Error Response:', err);
-      throw new Error(err.description || 'Add to cart failed');
+      console.error('[ProductCards] Post Error:', err);
+      throw new Error(err.description || 'Add failed');
     }
     return res.json();
   }
 
   async function refreshCartCount() {
-    console.log('[ProductCards] Refreshing cart count bubbles...');
     try {
       const res   = await fetch('/cart.js');
       const cart  = await res.json();
@@ -291,16 +299,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (window.Shopify && window.Shopify.sections) {
         window.Shopify.sections.load('#cart-icon-bubble').catch(() => {});
       }
-      console.log('[ProductCards] Cart count update successful. Total Items:', count);
-    } catch (e) {
-      console.warn('[ProductCards] Cart count refresh failed:', e);
-    }
+    } catch (e) {}
   }
 
   async function openCartDrawer() {
-    console.log('[ProductCards] Attempting to open Drawer Drawer...');
     const drawer = document.querySelector('cart-drawer');
-
     if (drawer && typeof drawer.renderContents === 'function') {
       try {
         drawer.classList.remove('is-empty');
@@ -314,12 +317,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = await res.json();
 
         drawer.renderContents({ sections: data });
-        console.log('[ProductCards] Dawn Theme Cart Drawer opened via renderContents.');
       } catch (e) {
-        console.warn('[ProductCards] Drawer renderContents failed fallback activated:', e);
-        if (typeof drawer.open === 'function') {
-          drawer.open();
-        }
+        if (typeof drawer.open === 'function') drawer.open();
       }
       return;
     }
@@ -330,10 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const drawerInner = document.querySelector('.drawer__inner');
-    if (drawerInner) {
-      drawerInner.classList.add('active');
-      console.log('[ProductCards] Fallback non-Dawn drawer activated class .active');
-    }
+    if (drawerInner) drawerInner.classList.add('active');
   }
 
   // ─── Click: open popup ──────────────────────────────────────────────────────
@@ -359,17 +355,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   addBtn.addEventListener('click', async function (e) {
     e.stopPropagation();
-    console.log('[ProductCards] Add To Cart button triggered.');
-    if (!currentData || addBtn.disabled) {
-      console.warn('[ProductCards] Request blocked. Data missing or button disabled.');
-      return;
-    }
+    if (!currentData || addBtn.disabled) return;
 
     const variants = currentData.variants;
-    if (!variants.length) {
-      console.error('[ProductCards] Error: Current product has no variants data.');
-      return;
-    }
+    if (!variants.length) return;
 
     const colorInput = popup.querySelector('.popup-color-input:checked');
     const sizeSelect = popup.querySelector('.popup-size-select');
@@ -378,28 +367,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedSize  = sizeSelect ? sizeSelect.value : '';
 
     if (sizeSelect && !selectedSize) {
-      console.warn('[ProductCards] Size validation failed: User did not select a size.');
       alert('Please select a size first!');
       return;
     }
 
-    // 1. Find Matched Variant
     let matched = findVariant(variants, selectedColor, selectedSize);
 
-    // Backup if single item (No variant options structure)
     if (!matched && currentData.hasVariants) {
-      console.log('[ProductCards] No selector match found, but product is fallback single variant. Using index 0.');
       matched = variants[0];
     }
 
     if (!matched) {
-      console.error('[ProductCards] Error: Could not match selected options to any variant.');
       alert('This combination is not available. Please select another option.');
       return;
     }
 
     if (!matched.available) {
-      console.warn('[ProductCards] Variant selected is Out of Stock:', matched);
       alert('Sorry, this variant is currently out of stock.');
       return;
     }
@@ -409,35 +392,26 @@ document.addEventListener('DOMContentLoaded', function () {
     addBtn.innerHTML = '<span>ADDING...</span>';
 
     try {
-      // Main product item object
       const itemsToAdd = [{ id: parseInt(matched.id), quantity: 1 }];
-
-      // 2. Gift Product logic check (Color: black, Size: m)
       const FREE_VARIANT_ID = 8565446934713; 
       
-      console.log('[ProductCards] Checking Gift rules. User Normalized Color:', normalize(selectedColor), '| Normalized Size:', normalize(selectedSize));
+      console.log('[ProductCards] Evaluated Combo -> Color:', normalize(selectedColor), '| Size:', normalize(selectedSize));
       
       if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
-        console.log('[ProductCards] Match Success! Adding Free Gift ID:', FREE_VARIANT_ID);
+        console.log('[ProductCards] Match Gift Check Success!');
         itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
-      } else {
-        console.log('[ProductCards] Gift rules did not match for this variation.');
       }
 
-      console.log('[ProductCards] Proceeding to queue items to Shopify API:', itemsToAdd);
-      
-      // API trigger
+      console.log('[ProductCards] Dispatching Items Array:', itemsToAdd);
       await addToCart(itemsToAdd);
 
       addBtn.innerHTML = '<span>ADDED ✓</span>';
-      console.log('[ProductCards] API success response received.');
-
       closePopup();
       await refreshCartCount();
       await openCartDrawer();
 
     } catch (err) {
-      console.error('[ProductCards] Fatal Exception during Cart process:', err);
+      console.error('[ProductCards] System Exception:', err);
       addBtn.innerHTML = '<span>ERROR — TRY AGAIN</span>';
     } finally {
       setTimeout(() => {
