@@ -21,7 +21,6 @@
               <span class="plus-symbol">+</span>
             </div>
 
-            <!-- POPUP MODAL (Every Product has its own isolated HTML structure) -->
             <div class="ppc-popup-backdrop js-popup-backdrop">
               <div class="ppc-popup" onclick="event.stopPropagation();">
                 <button type="button" class="ppc-popup__close js-popup-close">&times;</button>
@@ -39,7 +38,6 @@
                     </div>
                   </div>
 
-                  <!-- Dynamic UI Option Groups -->
                   <div class="variant-selection-container">
                     {% unless product.has_only_default_variant %}
                       {% for option in product.options_with_values %}
@@ -50,14 +48,14 @@
                             <div class="color-swatch-wrapper">
                               {% for value in option.values %}
                                 <div class="color-swatch-item">
-                                  <input type="radio" id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" name="color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-option-selector" data-index="option{{ forloop.parentloop.index }}" {% if forloop.first %}checked{% endif %}>
+                                  <input type="radio" id="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" name="color-{{ block.id }}" value="{{ value | escape }}" class="color-swatch-input js-option-selector" {% if forloop.first %}checked{% endif %}>
                                   <label for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}" class="color-swatch-label">{{ value }}</label>
                                 </div>
                               {% endfor %}
                             </div>
                           {% else %}
                             <div class="size-dropdown-wrapper">
-                              <select class="variant-select js-option-selector" data-index="option{{ forloop.index }}">
+                              <select class="variant-select js-option-selector">
                                 <option value="" disabled selected>Choose {{ option.name }}</option>
                                 {% for value in option.values %}
                                   <option value="{{ value | escape }}">{{ value }}</option>
@@ -71,21 +69,6 @@
                     {% endunless %}
                   </div>
 
-                  <!-- HIDDEN ACTUAL NATIVE MASTER SELECT FOR VARIANT ID -->
-                  <select class="js-master-id-select" name="id" style="display: none;">
-                    {% for variant in product.variants %}
-                      <option value="{{ variant.id }}" 
-                        data-price="{{ variant.price | money }}"
-                        data-available="{{ variant.available }}"
-                        data-option1="{{ variant.option1 | escape }}"
-                        data-option2="{{ variant.option2 | escape }}"
-                        data-option3="{{ variant.option3 | escape }}"
-                        {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %}>
-                        {{ variant.title }}
-                      </option>
-                    {% endfor %}
-                  </select>
-
                   <button type="button" class="product-btn js-add-to-cart">
                     <span>ADD TO CART</span>
                     <span class="btn-arrow">→</span>
@@ -93,6 +76,21 @@
                 </div>
               </div>
             </div>
+
+            <script class="js-raw-product-data" type="application/json">
+              {
+                "variants": [
+                  {% for variant in product.variants %}
+                    {
+                      "id": {{ variant.id }},
+                      "price": {{ variant.price | money | json }},
+                      "available": {{ variant.available }},
+                      "options": {{ variant.options | json }}
+                    }{% unless forloop.last %},{% endunless %}
+                  {% endfor %}
+                ]
+              }
+            </script>
 
           </div>
         {% endif %}
@@ -103,6 +101,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+  // Format Helper
+  function cleanVal(str) {
+    return (str || '').toLowerCase().trim();
+  }
 
   // 1. OPEN / CLOSE POPUP ACTIONS
   document.querySelectorAll('.product-card').forEach(card => {
@@ -120,77 +123,78 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 2. VARIANT SELECTION & VALUE PICKER LOGIC
-  document.querySelectorAll('.product-card').forEach(card => {
-    const masterSelect = card.querySelector('.js-master-id-select');
-    if (!masterSelect) return;
+  // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
+  function getSelectedVariant(card) {
+    const jsonEl = card.querySelector('.js-raw-product-data');
+    if (!jsonEl) return null;
 
+    const productData = JSON.parse(jsonEl.textContent);
+    const radioChecked = card.querySelector('.color-swatch-input:checked');
+    const dropdownSelect = card.querySelector('.variant-select');
+
+    const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
+    const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
+
+    // Filter matching variants array from JSON
+    return productData.variants.find(variant => {
+      const vOpts = variant.options.map(o => cleanVal(o));
+      if (val1 && val2) {
+        return vOpts.includes(val1) && vOpts.includes(val2);
+      }
+      return vOpts.includes(val1) || vOpts.includes(val2);
+    }) || productData.variants[0];
+  }
+
+  // 3. OPTION CHANGED & PRICE LIVE UPDATE
+  document.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('change', function (e) {
       if (!e.target.classList.contains('js-option-selector')) return;
 
-      // Current User Selection collect krna
-      const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const dropdownSelect = card.querySelector('.variant-select');
-
-      const val1 = radioChecked ? radioChecked.value.toLowerCase().trim() : '';
-      const val2 = dropdownSelect ? dropdownSelect.value.toLowerCase().trim() : '';
-
-      // Master select options me se perfect matching row dhundna
-      let matchedOption = null;
-      Array.from(masterSelect.options).forEach(opt => {
-        const o1 = (opt.dataset.option1 || '').toLowerCase().trim();
-        const o2 = (opt.dataset.option2 || '').toLowerCase().trim();
-
-        // Shopify dynamic check configuration
-        if ((o1 === val1 && o2 === val2) || (o1 === val2 && o2 === val1) || (!o2 && (o1 === val1 || o1 === val2))) {
-          matchedOption = opt;
-        }
-      });
-
-      // Agar match mil gya to master select value update kardo and price badlo
-      if (matchedOption) {
-        masterSelect.value = matchedOption.value;
-        card.querySelector('.js-price-display').textContent = matchedOption.dataset.price;
+      const matchedVariant = getSelectedVariant(card);
+      if (matchedVariant) {
+        card.querySelector('.js-price-display').textContent = matchedVariant.price;
       }
     });
   });
 
-  // 3. CART PUSH & CONDITIONAL FREE GIFT RULE
+  // 4. AJAX SUBMIT AND GIFT VALIDATION
   document.querySelectorAll('.js-add-to-cart').forEach(btn => {
     btn.addEventListener('click', async function (e) {
       e.stopPropagation();
       const card = this.closest('.product-card');
-      const masterSelect = card.querySelector('.js-master-id-select');
-      const selectedOption = masterSelect.options[masterSelect.selectedIndex];
-
-      // Safe checks
       const sizeDropdown = card.querySelector('.variant-select');
+
       if (sizeDropdown && !sizeDropdown.value) {
         alert('Please select a size first!');
         return;
       }
 
-      if (selectedOption.dataset.available === 'false') {
+      const matchedVariant = getSelectedVariant(card);
+      if (!matchedVariant) {
+        alert('Combination not available!');
+        return;
+      }
+
+      if (!matchedVariant.available) {
         alert('This variant is currently Out of Stock!');
         return;
       }
 
-      // ── Step A: Get Selected Variant ID ──
-      const activeVariantId = Number(masterSelect.value);
-      const itemsPayload = [{ id: activeVariantId, quantity: 1 }];
+      // Main product ID initialization
+      const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
 
-      // ── Step B: Check Rule Condition (Color: Black & Size: M) ──
+      // Check gift rule condition
       const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const colorValue = radioChecked ? radioChecked.value.toLowerCase().trim() : '';
-      const sizeValue = sizeDropdown ? sizeDropdown.value.toLowerCase().trim() : '';
+      const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
+      const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
 
       if (colorValue === 'black' && sizeValue === 'm') {
         const FREE_GIFT_VARIANT_ID = 8565446934713;
-        console.log('[CartAPI] Gift match rule success! Pushing Free Product ID.');
+        console.log('[CartAPI] Gift condition matching perfectly!');
         itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
       }
 
-      // ── Step C: Push Array to /cart/add.js ──
+      // XHR Post Request
       btn.disabled = true;
       this.querySelector('span').textContent = 'ADDING...';
 
@@ -201,17 +205,16 @@ document.addEventListener('DOMContentLoaded', function () {
           body: JSON.stringify({ items: itemsPayload })
         });
 
-        if (!response.ok) throw new Error('Add Failed');
+        if (!response.ok) throw new Error('API Rejection');
 
         this.querySelector('span').textContent = 'ADDED ✓';
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
-        // ── Step D: Open Theme Cart Drawer ──
         triggerCartDrawerOpen();
 
       } catch (err) {
-        console.error('[CartAPI] Process Interrupted:', err);
+        console.error('[CartAPI] Exception handling triggered:', err);
         this.querySelector('span').textContent = 'TRY AGAIN';
       } finally {
         setTimeout(() => {
@@ -222,13 +225,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 4. THEME DRAWER REFRESH & OPEN HANDLER (Isolated)
+  // 5. THEME DRAWERS INTERACTION
   async function triggerCartDrawerOpen() {
     const themeDrawer = document.querySelector('cart-drawer');
     if (!themeDrawer) return;
 
     try {
-      // Cart Bubble update krna aur Drawer sections fresh hit krna
       const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
       const sectionData = await refreshRes.json();
       
@@ -238,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function () {
         themeDrawer.open();
       }
     } catch (e) {
-      // Backup simple execution style
       if (typeof themeDrawer.open === 'function') themeDrawer.open();
     }
   }
