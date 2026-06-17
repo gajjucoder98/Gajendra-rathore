@@ -142,7 +142,7 @@
     }
 
     // 1. OPEN / CLOSE POPUP ACTIONS
-    document.querySelectorAll('.product-card__plus-icon').forEach((card) => {
+    document.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('click', () => {
         card.querySelector('.js-popup-backdrop').classList.add('active');
         document.body.style.overflow = 'hidden';
