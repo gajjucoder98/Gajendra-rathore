@@ -342,69 +342,79 @@ if (currentData.variants && currentData.variants.length > 0) {
   // ─── Click: Add to Cart inside popup ────────────────────────────────────────
 
   addBtn.addEventListener('click', async function (e) {
-    e.stopPropagation();
-    if (!currentData || addBtn.disabled) return;
+  e.stopPropagation();
+  if (!currentData || addBtn.disabled) return;
 
-    const variants = currentData.variants;
-    if (!variants.length) return;
+  const variants = currentData.variants;
+  if (!variants.length) return;
 
-    const colorInput = popup.querySelector('.popup-color-input:checked');
-    const sizeSelect = popup.querySelector('.popup-size-select');
+  const colorInput = popup.querySelector('.popup-color-input:checked');
+  const sizeSelect = popup.querySelector('.popup-size-select');
 
-    const selectedColor = colorInput ? colorInput.value : '';
-    const selectedSize  = sizeSelect ? sizeSelect.value : '';
+  const selectedColor = colorInput ? colorInput.value : '';
+  const selectedSize  = sizeSelect ? sizeSelect.value : '';
 
-    if (sizeSelect && !selectedSize) {
-      alert('Please select a size first!');
-      return;
+  // अगर साइज़ ड्रॉपडाउन मौजूद है लेकिन यूज़र ने चुना नहीं है
+  if (sizeSelect && !selectedSize) {
+    alert('Please select a size first!');
+    return;
+  }
+
+  // वेरिएंट मैच करें
+  let matched = findVariant(variants, selectedColor, selectedSize);
+
+  // बैकअप: अगर प्रोडक्ट का सिर्फ एक ही डिफ़ॉल्ट वेरिएंट है (No variants options)
+  if (!matched && currentData.hasVariants) {
+    matched = variants[0];
+  }
+
+  if (!matched) {
+    alert('This combination is not available. Please select another option.');
+    return;
+  }
+
+  if (!matched.available) {
+    alert('Sorry, this variant is currently out of stock.');
+    return;
+  }
+
+  addBtn.disabled = true;
+  const originalHTML = addBtn.innerHTML;
+  addBtn.innerHTML = '<span>ADDING...</span>';
+
+  try {
+    // मुख्य प्रोडक्ट को एरे में डालें
+    const itemsToAdd = [{ id: parseInt(matched.id), quantity: 1 }];
+
+    // गिफ्ट प्रोडक्ट कंडीशन (Black + M)
+    const FREE_VARIANT_ID = 8565446934713;
+    if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
+      itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
     }
 
-    const matched = findVariant(variants, selectedColor, selectedSize);
+    console.log('[ProductCards] Sending to Shopify Cart:', itemsToAdd);
+    
+    // कार्ट में ऐड करें
+    await addToCart(itemsToAdd);
 
-    if (!matched) {
-      alert('This combination is not available. Please select another option.');
-      return;
-    }
+    addBtn.innerHTML = '<span>ADDED ✓</span>';
 
-    if (!matched.available) {
-      alert('Sorry, this variant is currently out of stock.');
-      return;
-    }
+    // पॉपअप बंद करें और कार्ट रिफ्रेश करें
+    closePopup();
+    await refreshCartCount();
+    await openCartDrawer();
 
-    addBtn.disabled = true;
-    const originalHTML = addBtn.innerHTML;
-    addBtn.innerHTML = '<span>ADDING...</span>';
-
-    try {
-      // Build items array: main product + gift product (if Black + M)
-      const itemsToAdd = [{ id: matched.id, quantity: 1 }];
-
-      const FREE_VARIANT_ID = 8565446934713;
-      if (normalize(selectedColor) === 'black' && normalize(selectedSize) === 'm') {
-        itemsToAdd.push({ id: FREE_VARIANT_ID, quantity: 1 });
-      }
-
-      console.log('[ProductCards] Adding items:', itemsToAdd);
-      await addToCart(itemsToAdd);
-
-      addBtn.innerHTML = '<span>ADDED ✓</span>';
-
-      // Close popup, refresh cart, open drawer
-      closePopup();
-      await refreshCartCount();
-      await openCartDrawer();
-
-    } catch (err) {
-      console.error('[ProductCards] Add to cart error:', err);
-      addBtn.innerHTML = '<span>ERROR — TRY AGAIN</span>';
-
-    } finally {
-      setTimeout(() => {
-        addBtn.innerHTML = originalHTML;
-        addBtn.disabled  = false;
-      }, 1600);
-    }
-  });
+  } catch (err) {
+    console.error('[ProductCards] Add to cart error:', err);
+    alert('Could not add to cart. Please try again.');
+    addBtn.innerHTML = '<span>ERROR — TRY AGAIN</span>';
+  } finally {
+    setTimeout(() => {
+      addBtn.innerHTML = originalHTML;
+      addBtn.disabled  = false;
+    }, 1600);
+  }
+});
 
 });
 </script>
