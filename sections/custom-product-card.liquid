@@ -275,69 +275,38 @@ document.addEventListener('DOMContentLoaded', function () {
   async function openCartDrawer() {
     const drawer = document.querySelector('cart-drawer');
 
-    // Method 1 — Dawn theme's native cart-drawer web component
-    if (drawer) {
+    if (drawer && typeof drawer.renderContents === 'function') {
+      // ── Dawn native method: renderContents() ──
+      // It expects { id, sections: { 'cart-drawer': html, 'cart-icon-bubble': html } }
+      // then updates innerHTML of #CartDrawer + #cart-icon-bubble and calls this.open()
       try {
-        const sectionEl  = drawer.closest('[id^="shopify-section"]');
-        const sectionId  = sectionEl
-          ? sectionEl.id.replace('shopify-section-', '')
-          : 'cart-drawer';
-
-        const res  = await fetch('/?sections=' + sectionId);
+        const sectionsToFetch = ['cart-drawer', 'cart-icon-bubble'].join(',');
+        const res  = await fetch('/?sections=' + sectionsToFetch);
         const data = await res.json();
 
-        if (data[sectionId]) {
-          const parser    = new DOMParser();
-          const newDoc    = parser.parseFromString(data[sectionId], 'text/html');
-          const newDrawer = newDoc.querySelector('cart-drawer');
+        // renderContents expects parsedState.sections
+        drawer.renderContents({ sections: data });
 
-          if (newDrawer) {
-            drawer.innerHTML = newDrawer.innerHTML;
-          }
-
-          // Try Dawn's native open
-          if (typeof drawer.open === 'function') {
-            drawer.open();
-          } else {
-            drawer.classList.add('active', 'is-open');
-            drawer.removeAttribute('hidden');
-            const details = drawer.querySelector('details');
-            if (details) details.setAttribute('open', '');
-          }
-        }
       } catch (e) {
-        console.warn('[ProductCards] Drawer section render failed:', e);
+        console.warn('[ProductCards] Drawer renderContents failed:', e);
+        // Fallback: just try opening drawer as-is
+        if (typeof drawer.open === 'function') {
+          drawer.open();
+        }
       }
       return;
     }
 
-    // Method 2 — fallback: generic .drawer__inner
+    // Fallback for non-Dawn themes
+    if (drawer && typeof drawer.open === 'function') {
+      drawer.open();
+      return;
+    }
+
+    // Last resort: generic .drawer__inner
     const drawerInner = document.querySelector('.drawer__inner');
     if (drawerInner) {
       drawerInner.classList.add('active');
-
-      try {
-        const sectionEl = document.querySelector('[id^="shopify-section"][id*="cart"]');
-        const sectionId = sectionEl
-          ? sectionEl.id.replace('shopify-section-', '')
-          : 'cart-drawer';
-
-        const res  = await fetch('/?sections=' + sectionId);
-        const data = await res.json();
-
-        if (data[sectionId]) {
-          const parser    = new DOMParser();
-          const newDoc    = parser.parseFromString(data[sectionId], 'text/html');
-          const newInner  = newDoc.querySelector('.drawer__inner');
-
-          if (newInner) {
-            drawerInner.innerHTML = newInner.innerHTML;
-            drawerInner.classList.add('active');
-          }
-        }
-      } catch (e) {
-        console.warn('[ProductCards] Drawer section render failed:', e);
-      }
     }
   }
 
