@@ -20,7 +20,7 @@
               class="product-card__plus-icon"
               style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;"
             >
-          {% render 'plus-icon' %}
+              {% render 'plus-icon' %}
             </div>
 
             <div class="ppc-popup-backdrop js-popup-backdrop">
@@ -45,7 +45,6 @@
                         }}
                       </div>
                       <div class="product-price js-price-display">{{ product.price | money }}</div>
-                   
                     </div>
                   </div>
 
@@ -79,25 +78,25 @@
                               {% endfor %}
                             </div>
                           {% else %}
-                            <div class="size-dropdown-wrapper">
-                              <select class="variant-select js-option-selector">
-                                <option value="" disabled selected>Choose {{ option.name }}</option>
+                            <div class="custom-dropdown-container size-dropdown-wrapper">
+                              <input type="hidden" class="variant-select js-option-selector" name="size-{{ block.id }}" value="">
+                              
+                              <div class="custom-dropdown-header js-dropdown-toggle">
+                                <span class="js-dropdown-placeholder">Choose {{ option.name }}</span>
+                                <span class="dropdown-chevron">
+                                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                  </svg>
+                                </span>
+                              </div>
+                              
+                              <div class="custom-dropdown-list">
                                 {% for value in option.values %}
-                                  <option value="{{ value | escape }}">{{ value }}</option>
+                                  <div class="custom-dropdown-item" data-value="{{ value | escape }}">
+                                    {{ value }}
+                                  </div>
                                 {% endfor %}
-                              </select>
-                              <span class="dropdown-chevron">
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width="18"
-                                  height="18"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                  fill="none"
-                                >
-                                  <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                              </span>
+                              </div>
                             </div>
                           {% endif %}
                         </div>
@@ -141,27 +140,73 @@
       return (str || '').toLowerCase().trim();
     }
 
- // 1. OPEN / CLOSE POPUP ACTIONS
-document.querySelectorAll('.product-card').forEach((card) => {
-  const plusIcon = card.querySelector('.product-card__plus-icon');
-  
-  if (plusIcon) {
-    plusIcon.addEventListener('click', (e) => {
-      // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
-      e.stopPropagation(); 
-      card.querySelector('.js-popup-backdrop').classList.add('active');
-      document.body.style.overflow = 'hidden';
+    // 1. OPEN / CLOSE POPUP ACTIONS
+    document.querySelectorAll('.product-card').forEach((card) => {
+      const plusIcon = card.querySelector('.product-card__plus-icon');
+      if (plusIcon) {
+        plusIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          card.querySelector('.js-popup-backdrop').classList.add('active');
+          document.body.style.overflow = 'hidden';
+        });
+      }
     });
-  }
-});
 
-document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
-  closeTarget.addEventListener('click', function (e) {
-    e.stopPropagation();
-    this.closest('.js-popup-backdrop').classList.remove('active');
-    document.body.style.overflow = '';
-  });
-});
+    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+      closeTarget.addEventListener('click', function (e) {
+        e.stopPropagation();
+        this.closest('.js-popup-backdrop').classList.remove('active');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // CUSTOM DROPDOWN INTERACTION SCRIPT
+    document.querySelectorAll('.custom-dropdown-container').forEach((dropdown) => {
+      const toggle = dropdown.querySelector('.js-dropdown-toggle');
+      const hiddenInput = dropdown.querySelector('.variant-select');
+      const placeholder = dropdown.querySelector('.js-dropdown-placeholder');
+      const items = dropdown.querySelectorAll('.custom-dropdown-item');
+
+      // Toggle Open/Close dropdown list
+      toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        
+        // Close other open dropdowns first
+        document.querySelectorAll('.custom-dropdown-container').forEach((otherDropdown) => {
+          if (otherDropdown !== dropdown) otherDropdown.classList.remove('is-open');
+        });
+        
+        dropdown.classList.toggle('is-open');
+      });
+
+      // Item selection execution
+      items.forEach((item) => {
+        item.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const selectedValue = this.getAttribute('data-value');
+          
+          // Update visual states
+          items.forEach(i => i.classList.remove('is-selected'));
+          this.classList.add('is-selected');
+          
+          placeholder.textContent = this.textContent.trim();
+          hiddenInput.value = selectedValue;
+          
+          dropdown.classList.remove('is-open');
+
+          // Trigger dynamic price change event manually
+          const changeEvent = new Event('change', { bubbles: true });
+          hiddenInput.dispatchEvent(changeEvent);
+        });
+      });
+    });
+
+    // Close dropdown list if clicking anywhere outside the box
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-dropdown-container').forEach((dropdown) => {
+        dropdown.classList.remove('is-open');
+      });
+    });
 
     // 2. HELPER FUNCTION TO FIND ACTIVE VARIANT OBJECT FROM HTML
     function getSelectedVariant(card) {
@@ -170,12 +215,11 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
 
       const productData = JSON.parse(jsonEl.textContent);
       const radioChecked = card.querySelector('.color-swatch-input:checked');
-      const dropdownSelect = card.querySelector('.variant-select');
+      const dropdownInput = card.querySelector('.variant-select'); // Captures hidden input value now
 
       const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
-      const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
+      const val2 = dropdownInput ? cleanVal(dropdownInput.value) : '';
 
-      // Filter matching variants array from JSON
       return (
         productData.variants.find((variant) => {
           const vOpts = variant.options.map((o) => cleanVal(o));
@@ -222,10 +266,8 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
           return;
         }
 
-        // Main product ID initialization
         const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
 
-        // Check gift rule condition
         const radioChecked = card.querySelector('.color-swatch-input:checked');
         const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
         const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
@@ -236,7 +278,6 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
           itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
         }
 
-        // XHR Post Request
         btn.disabled = true;
         this.querySelector('span').textContent = 'ADDING...';
 
@@ -312,7 +353,6 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
      position: relative;
      overflow: hidden;
      height: 444px;
-
   }
   .product-card__image,
   .product-card__image img{
@@ -324,7 +364,6 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
     display: block;
     transition: transform .5s ease;
    }
-
 
   .product-card__plus-icon {
     position: absolute;
@@ -341,7 +380,6 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
      cursor:pointer;
       transition: all 0.35s ease;
   }
-  
 
   /* ═══════════════════════════════════════════════════════════════════════════
      POPUP CARDS ELEMENTS
@@ -361,25 +399,19 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   .ppc-popup-backdrop.active .ppc-popup { transform: translateY(0) scale(1); opacity: 1; }
 
   .ppc-popup__close {
-    position: absolute; top: 12px; right: 14px; background: rgba); border: none;
-    color: #fff; font-size: 26px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.05); border: none;
+    color: #000; font-size: 26px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: background 0.2s; line-height: 1;
   }
-  .ppc-popup__close:hover { background: rgba(255,255,255,0.25); }
+  .ppc-popup__close:hover { background: rgba(0,0,0,0.15); }
 
   .product-info-top { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; text-align: left; }
   .product-thumb { width: 90px; min-width: 90px; }
   .product-thumb img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; display: block; }
   .product-details { flex: 1; }
   .product-details h3 { margin: 0 0 8px; color: #000; font-size: 16px; line-height: 1.2; font-weight:200;}
-  .product-desc {color: #000;
-    font-size: 14px;
-    line-height: 1.2;
-    margin-bottom: 10px;
-    letter-spacing: 0px;
-    font-weight: 200;}
-  .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px;font-family:lustria }
-
+  .product-desc {color: #000; font-size: 14px; line-height: 1.2; margin-bottom: 10px; letter-spacing: 0px; font-weight: 200;}
+  .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px; font-family:lustria }
 
   .variant-selection-container { text-align: left; margin-bottom: 24px; }
   .variant-option-group { margin-bottom: 16px; }
@@ -390,22 +422,96 @@ document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeT
   .color-swatch-item:last-child { border-right: none; }
   .color-swatch-input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
   .color-swatch-label { display: block; padding: 12px; background: transparent; color: #000; font-size: 15px; cursor: pointer; transition: all 0.2s; }
-  .color-swatch-input:checked + .color-swatch-label { background: #ffffff; color: #000000; font-weight: bold; }
+  .color-swatch-input:checked + .color-swatch-label { background: #000000; color: #ffffff; font-weight: bold; }
 
-  .size-dropdown-wrapper { position: relative; width: 100%; }
-  .variant-select { width: 100%; padding: 14px 40px 14px 16px;  border: 1px solid #000; background: transparent; color: #000; font-size: 15px; appearance: none; -webkit-appearance: none; cursor: pointer; }
-  .variant-select option { background: #fff; color: #000; }
-  .variant-select option:hover{
-    background:#000;
-    color:#fff;
+  /* ═══════════════════════════════════════════════════════════════════════════
+     NEW CUSTOM DROPDOWN CSS (MATCHING ATTACHED IMAGES)
+     ═══════════════════════════════════════════════════════════════════════════ */
+  .custom-dropdown-container {
+    position: relative;
+    width: 100%;
+    font-family: inherit;
+    user-select: none;
   }
-  .dropdown-chevron { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #fff; pointer-events: none; display: flex; align-items: center; }
 
+  .custom-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .custom-dropdown-header .dropdown-chevron {
+    position: static;
+    transform: none;
+    color: #000;
+    transition: transform 0.2s ease;
+  }
+
+  /* Chevron Rotates Upward when Open */
+  .custom-dropdown-container.is-open .dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .custom-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    border: 1px solid #000;
+    border-top: none;
+    background: #fff;
+    z-index: 10;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    box-sizing: border-box;
+  }
+
+  .custom-dropdown-container.is-open .custom-dropdown-list {
+    display: block;
+  }
+
+  .custom-dropdown-item {
+    padding: 12px 16px;
+    color: #000;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease;
+  }
+
+  .custom-dropdown-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Hover effect for item lists */
+  .custom-dropdown-item:hover {
+    background: #f5f5f5;
+  }
+
+  /* Black Active Selected state matching image reference */
+  .custom-dropdown-item.is-selected {
+    background: #000000 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     BUTTON AND DRAWER ACTIONS
+     ═══════════════════════════════════════════════════════════════════════════ */
   .product-btn { width: 100%; padding: 16px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;  transition: all 0.3s ease; }
-  .product-btn:hover:not(:disabled) { background: #fff; color: #000; }
+  .product-btn:hover:not(:disabled) { background: #fff; color: #000; border: 1px solid #000; }
   .product-btn:disabled { opacity: 0.7; cursor: not-allowed; }
   .btn-arrow { font-size: 20px; line-height: 1; transition: transform 0.2s; }
-
+  .product-btn:hover:not(:disabled) .btn-arrow { transform: translateX(4px); }
 
   @media screen and (max-width: 768px) {
     .product-card__plus-icon { width: 32px; height: 32px; }
