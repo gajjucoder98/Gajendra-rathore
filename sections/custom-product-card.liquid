@@ -72,6 +72,8 @@
                                   <label
                                     for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
                                     class="color-swatch-label"
+                                    style="--swatch-color: {{ value.swatch.color }};"
+
                                   >
                                     {{- value -}}
                                   </label>
