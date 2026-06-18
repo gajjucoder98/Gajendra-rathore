@@ -80,27 +80,31 @@
                               {% endfor %}
                             </div>
                           {% else %}
-                            <div class="size-dropdown-wrapper">
-                              <select class="variant-select js-option-selector">
-                                <option value="" disabled selected>Choose {{ option.name }}</option>
-                                {% for value in option.values %}
-                                  <option value="{{ value | escape }}">{{ value }}</option>
-                                {% endfor %}
-                              </select>
-                              <span class="dropdown-chevron">
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  width="18"
-                                  height="18"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                  fill="none"
-                                >
-                                  <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                              </span>
-                            </div>
-                          {% endif %}
+  <div class="size-dropdown-wrapper">
+    <div class="custom-select-box js-custom-select" data-selected="">
+      <div class="custom-select-trigger">
+        <span class="custom-select-text">Choose {{ option.name }}</span>
+        <span class="dropdown-chevron">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </div>
+      <div class="custom-select-options">
+        {% for value in option.values %}
+          <div class="custom-select-option" data-value="{{ value | escape }}">{{ value }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {%- comment -%} Hidden select for JS variant matching {%- endcomment -%}
+    <select class="variant-select js-option-selector" style="display:none;">
+      <option value="" disabled selected>Choose {{ option.name }}</option>
+      {% for value in option.values %}
+        <option value="{{ value | escape }}">{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+{% endif %}
                         </div>
                       {% endfor %}
                     {% endunless %}
