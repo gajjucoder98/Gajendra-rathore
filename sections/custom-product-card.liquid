@@ -54,7 +54,6 @@
                       {% for option in product.options_with_values %}
                         <div class="variant-option-group">
                           <label class="variant-label">{{ option.name }}</label>
-                          
                           {% if option.name == 'Color' or option.name == 'color' or option.name == 'Colour' %}
                             <div class="color-swatch-wrapper">
                               {% for value in option.values %}
