@@ -121,9 +121,7 @@
 </script>
 
 <style>
-      /* =====================================================
-  TISSO GIFT BAR & GIFT GUIDE BANNER STYLESHEET
-  ===================================================== */
+    
 
   /* =====================================================
 
@@ -131,43 +129,43 @@
      ===================================================== */
 
   .tisso-gift-bar {
-  background-color: #f6f6f6;
-  border-bottom: 1px solid #e2e2e2;
-  position: relative;
-  width: 100%;
-  z-index: 9999;
-  font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #e2e2e2;
+    position: relative;
+    width: 100%;
+    z-index: 9999;
+    font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
   .bar-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 100%;
-  height: 75px;
-  margin: 0 auto;
-  padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 100%;
+    height: 75px;
+    margin: 0 auto;
+    padding: 0 40px;
   }
 
   .bar-toggle {
-  display: none;
+    display: none;
   }
 
   .bar-brand {
-  display: flex;
-  align-items: center;
-  position: relative;
+    display: flex;
+    align-items: center;
+    position: relative;
   }
 
   .brand-img-element {
-  display: block;
-  width: auto;
-  max-height: 28px;
-  object-fit: contain;
+    display: block;
+    width: auto;
+    max-height: 28px;
+    object-fit: contain;
   }
 
   .overlay-layer {
-  display: none !important;
+    display: none !important;
   }
 
   /* =====================================================
@@ -175,26 +173,26 @@
   ===================================================== */
 
   .bar-overlay-panel {
-  display: none;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
+    display: none;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .panel-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-left: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-left: 60px;
   }
 
   .bar-message {
-  margin: 0;
-  color: #1c1c1c;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.2px;
+    margin: 0;
+    color: #1c1c1c;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
   }
 
   /* =====================================================
@@ -202,27 +200,27 @@
   ===================================================== */
 
   .bar-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 40px;
-  background: #fff544;
-  color: #000;
-  text-decoration: none;
-  overflow: hidden;
-  z-index: 1;
-  transition: color 0.35s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 40px;
+    background: #fff544;
+    color: #000;
+    text-decoration: none;
+    overflow: hidden;
+    z-index: 1;
+    transition: color 0.35s ease;
   }
 
   .bar-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 0;
-  background: #000;
-  transition: width 0.35s ease;
-  z-index: -1;
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 0;
+    background: #000;
+    transition: width 0.35s ease;
+    z-index: -1;
   }
 
   .bar-btn:hover::before {
@@ -310,17 +308,17 @@
   ========================================== */
 
   .bar-brand {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: auto;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
   }
 
   /* ==========================================
@@ -328,62 +326,60 @@
   ========================================== */
 
   .base-layer {
-  position: relative;
-  opacity: 1;
-  transform: translateX(0);
-  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+    transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .overlay-layer {
-  display: block !important;
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(6px);
-  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+    display: block !important;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(6px);
+    transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .is-active .base-layer {
   transform: translateX(-4px);
   }
 
-  .is-active .overlay-layer {
-  transform: translateX(-4px);
-  animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  .is-active .overlay-layer { 
+    transform: translateX(-4px);
+    animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   @keyframes clearOverlayOnActive {
-  0% { opacity: 0.4; }
-  75% { opacity: 0.15; }
-  100% { opacity: 0; }
+    0% { opacity: 0.4; }
+    75% { opacity: 0.15; }
+    100% { opacity: 0; }
   }
 
   .is-closing .base-layer {
-  transform: translateX(0);
+    transform: translateX(0);
   }
 
   .is-closing .overlay-layer {
-  transform: translateX(6px);
-  animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    transform: translateX(6px);
+    animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   @keyframes clearOverlayOnClosing {
-  0% {
-  opacity: 0;
-  transform: translateX(-4px);
-  }
-
-  ```
-  30% {
-    opacity: 0.3;
-  }
-
-  100% {
+    0% {
     opacity: 0;
-    transform: translateX(6px);
-  }
-  ```
+    transform: translateX(-4px);
+    }
 
+    ```
+    30% {
+      opacity: 0.3;
+    }
+
+    100% {
+      opacity: 0;
+      transform: translateX(6px);
+    }
   }
 
   /* ==========================================
@@ -391,51 +387,46 @@
   ========================================== */
 
   .bar-overlay-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  display: block;
-  background: #f6f6f6;
-  border-bottom: 1px solid #e2e2e2;
-  box-shadow: 0 10px 25px rgba(0,0,0,.08);
-
-  ```
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-15px);
-
-  transition:
-    transform .4s cubic-bezier(0.16,1,0.3,1),
-    opacity .3s ease;
-  ```
-
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    display: block;
+    background: #f6f6f6;
+    border-bottom: 1px solid #e2e2e2;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition:
+      transform .4s cubic-bezier(0.16,1,0.3,1),
+      opacity .3s ease;
   }
 
   .is-active .bar-overlay-panel {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 
   .panel-inner {
-  flex-direction: column;
-  gap: 20px;
-  max-width: 100%;
-  margin-left: 0;
-  padding: 24px 20px 32px;
-  text-align: center;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 100%;
+    margin-left: 0;
+    padding: 24px 20px 32px;
+    text-align: center;
   }
 
   .bar-message {
-  font-size: 16px;
-  text-align: center;
+    font-size: 16px;
+    text-align: center;
   }
 
   .bar-btn {
-  width: 100%;
-  padding: 14px 45px;
-  box-sizing: border-box;
+    width: 100%;
+    padding: 14px 45px;
+    box-sizing: border-box;
   }
   }
 
@@ -444,67 +435,61 @@
   ===================================================== */
 
   .gift-guide-banner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 820px;
-
-  background-image: var(--desktop-bg);
-  background-repeat: no-repeat;
-  background-position: left;
-  background-size: cover;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 820px;
+    background-image: var(--desktop-bg);
+    background-repeat: no-repeat;
+    background-position: left;
+    background-size: cover;
   }
 
   .gift-guide-banner__content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-
-  max-width: 600px;
-  padding: 0 32px 60px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    max-width: 600px;
+    padding: 0 32px 60px;
   }
 
   .gift-guide-banner__heading {
-  margin: 0 0 15px;
-  font-size: 70px;
-  line-height: 1;
-  font-weight: 500;
+    margin: 0 0 15px;
+    font-size: 70px;
+    line-height: 1;
+    font-weight: 500;
   }
 
   .gift-guide-banner__description {
-  max-width: 500px;
-  margin-bottom: 32px;
-  font-size: 20px;
-  line-height: 1.2;
+    max-width: 500px;
+    margin-bottom: 32px;
+    font-size: 20px;
+    line-height: 1.2;
   }
 
   .gift-guide-banner__button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  width: max-content;
-  padding: 11px 49px;
-
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-
-  font-size: 16px;
-  font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: max-content;
+    padding: 11px 49px;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 400;
   }
 
   .gift-guide-banner__bottom-strip {
-  padding: 10px;
-  background: #f5f5f5;
-  text-align: center;
-
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+    padding: 10px;
+    background: #f5f5f5;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: .08em;
+    text-transform: uppercase;
   }
 
   /* =====================================================
@@ -513,70 +498,53 @@
 
   @media screen and (max-width: 749px) {
 
-  .gift-guide-banner {
-  min-height: 620px;
-  background-image: var(--mobile-bg);
-  background-position: center bottom;
-  }
+    .gift-guide-banner {
+      min-height: 620px;
+      background-image: var(--mobile-bg);
+      background-position: center bottom;
+    }
 
-  .gift-guide-banner__content {
-  max-width: 100%;
-  padding: 40px 24px;
+    .gift-guide-banner__content {
+      max-width: 100%;
+      padding: 40px 24px;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+    }
 
-  ```
-  align-items: center;
-  justify-content: space-between;
-  text-align: center;
-  ```
+    .gift-guide-banner__heading {
+      margin: 25px 0 15px;
+      font-size: 30px;
+      line-height: 1.1;
+      font-weight: 600;
+    }
 
-  }
+    .gift-guide-banner__description {
+      max-width: 100%;
+      margin-bottom: 25px;
+      padding: 0 10px;
+      font-size: 16px;
+      line-height: 1.4;
+    }
 
-  .gift-guide-banner__heading {
-  margin: 25px 0 15px;
-  font-size: 30px;
-  line-height: 1.1;
-  font-weight: 600;
-  }
+    .gift-guide-banner__button {
+      width: 80%;
+      max-width: 193px;
+      justify-content: center;
+      padding: 9px 30px;
+      font-size: 15px;
+      letter-spacing: .05em;
+    }
 
-  .gift-guide-banner__description {
-  max-width: 100%;
-  margin-bottom: 25px;
-  padding: 0 10px;
-
-  ```
-  font-size: 16px;
-  line-height: 1.4;
-  ```
-
-  }
-
-  .gift-guide-banner__button {
-  width: 80%;
-  max-width: 193px;
-  justify-content: center;
-
-  ```
-  padding: 9px 30px;
-  font-size: 15px;
-  letter-spacing: .05em;
-  ```
-
-  }
-
-  .gift-guide-banner__bottom-strip {
-  padding: 12px 10px;
-
-  ```
-  font-size: 13px;
-  letter-spacing: .06em;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  ```
-
-  }
-  }
+    .gift-guide-banner__bottom-strip {
+        padding: 12px 10px;
+        font-size: 13px;
+        letter-spacing: .06em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+ }
 </style>
 
 {% schema %}
