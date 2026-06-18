@@ -144,20 +144,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 1. OPEN / CLOSE POPUP ACTIONS
-    document.querySelectorAll('.product-card').forEach((card) => {
-      const plusIcon = card.querySelector('.product-card__plus-icon');
-
-      if (plusIcon) {
-        plusIcon.addEventListener('click', (e) => {
-          // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
-          e.stopPropagation();
-      card.querySelector('.js-popup-backdrop').classList.add('active');
-      document.body.style.overflow = 'hidden';
-    });
-      }
+  document.querySelectorAll('.product-card').forEach((card) => {
+    const plusIcon = card.querySelector('.product-card__plus-icon');
+    if (plusIcon) {
+      plusIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        card.querySelector('.js-popup-backdrop').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
   });
 
-    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
     closeTarget.addEventListener('click', function (e) {
       e.stopPropagation();
       this.closest('.js-popup-backdrop').classList.remove('active');
@@ -177,23 +175,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
     const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
 
-    // Filter matching variants array from JSON
-      return (
-        productData.variants.find((variant) => {
-          const vOpts = variant.options.map((o) => cleanVal(o));
-      if (val1 && val2) {
-        return vOpts.includes(val1) && vOpts.includes(val2);
-      }
-      return vOpts.includes(val1) || vOpts.includes(val2);
-        }) || productData.variants[0]
-      );
+    return (
+      productData.variants.find((variant) => {
+        const vOpts = variant.options.map((o) => cleanVal(o));
+        if (val1 && val2) {
+          return vOpts.includes(val1) && vOpts.includes(val2);
+        }
+        return vOpts.includes(val1) || vOpts.includes(val2);
+      }) || productData.variants[0]
+    );
   }
 
   // 3. OPTION CHANGED & PRICE LIVE UPDATE
-    document.querySelectorAll('.product-card').forEach((card) => {
+  document.querySelectorAll('.product-card').forEach((card) => {
     card.addEventListener('change', function (e) {
       if (!e.target.classList.contains('js-option-selector')) return;
-
       const matchedVariant = getSelectedVariant(card);
       if (matchedVariant) {
         card.querySelector('.js-price-display').textContent = matchedVariant.price;
@@ -202,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // 4. AJAX SUBMIT AND GIFT VALIDATION
-    document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
+  document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
     btn.addEventListener('click', async function (e) {
       e.stopPropagation();
       const card = this.closest('.product-card');
@@ -224,10 +220,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // Main product ID initialization
       const itemsPayload = [{ id: Number(matchedVariant.id), quantity: 1 }];
 
-      // Check gift rule condition
+      // Gift rule condition
       const radioChecked = card.querySelector('.color-swatch-input:checked');
       const colorValue = radioChecked ? cleanVal(radioChecked.value) : '';
       const sizeValue = sizeDropdown ? cleanVal(sizeDropdown.value) : '';
@@ -238,80 +233,78 @@ document.addEventListener('DOMContentLoaded', function () {
         itemsPayload.push({ id: Number(FREE_GIFT_VARIANT_ID), quantity: 1 });
       }
 
-      // XHR Post Request
       btn.disabled = true;
-      this.querySelector('span').textContent = 'ADDING...';
+      btn.querySelector('span').textContent = 'ADDING...';
 
       try {
         const response = await fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: itemsPayload }),
+          body: JSON.stringify({ items: itemsPayload }),
         });
 
         if (!response.ok) throw new Error('API Rejection');
 
-        this.querySelector('span').textContent = 'ADDED ✓';
+        btn.querySelector('span').textContent = 'ADDED ✓';
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
-        triggerCartDrawerOpen();
+        await triggerCartDrawerOpen();
 
       } catch (err) {
         console.error('[CartAPI] Exception handling triggered:', err);
-        this.querySelector('span').textContent = 'TRY AGAIN';
+        btn.querySelector('span').textContent = 'TRY AGAIN';
       } finally {
         setTimeout(() => {
           btn.disabled = false;
-          this.querySelector('span').textContent = 'ADD TO CART';
+          btn.querySelector('span').textContent = 'ADD TO CART';
         }, 1500);
       }
     });
   });
 
-  // 5. THEME DRAWERS INTERACTION
-  // 5. THEME DRAWERS INTERACTION - FIXED VERSION
-async function triggerCartDrawerOpen() {
-  try {
-    // Step 1: Fetch updated cart sections
-    const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
-    const sectionData = await refreshRes.json();
+  // 5. THEME DRAWERS INTERACTION - FIXED
+  async function triggerCartDrawerOpen() {
+    try {
+      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+      const sectionData = await refreshRes.json();
 
-    // Step 2: Update cart-drawer HTML
-    const cartDrawerEl = document.querySelector('cart-drawer');
-    if (cartDrawerEl) {
-      if (sectionData['cart-drawer']) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = sectionData['cart-drawer'];
-        const newInner = tempDiv.querySelector('cart-drawer');
-        if (newInner) {
-          cartDrawerEl.innerHTML = newInner.innerHTML;
+      // Cart Drawer HTML Update
+      const cartDrawerEl = document.querySelector('cart-drawer');
+      if (cartDrawerEl) {
+        if (sectionData['cart-drawer']) {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = sectionData['cart-drawer'];
+          const newInner = tempDiv.querySelector('cart-drawer');
+          if (newInner) {
+            cartDrawerEl.innerHTML = newInner.innerHTML;
+          }
+        }
+        // Open Drawer
+        if (typeof cartDrawerEl.open === 'function') {
+          cartDrawerEl.open();
         }
       }
-      // Step 3: Open drawer
-      if (typeof cartDrawerEl.open === 'function') {
-        cartDrawerEl.open();
+
+      // Cart Bubble / Count Update
+      const bubbleEl = document.querySelector('#cart-icon-bubble');
+      if (bubbleEl && sectionData['cart-icon-bubble']) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = sectionData['cart-icon-bubble'];
+        const newBubble = tempDiv.querySelector('#cart-icon-bubble');
+        if (newBubble) bubbleEl.innerHTML = newBubble.innerHTML;
+      }
+
+    } catch (e) {
+      console.error('[CartDrawer] Error:', e);
+      // Fallback
+      const themeDrawer = document.querySelector('cart-drawer');
+      if (themeDrawer && typeof themeDrawer.open === 'function') {
+        themeDrawer.open();
       }
     }
-
-    // Step 4: Update cart bubble/count
-    const bubbleEl = document.querySelector('#cart-icon-bubble');
-    if (bubbleEl && sectionData['cart-icon-bubble']) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = sectionData['cart-icon-bubble'];
-      const newBubble = tempDiv.querySelector('#cart-icon-bubble');
-      if (newBubble) bubbleEl.innerHTML = newBubble.innerHTML;
-    }
-
-  } catch (e) {
-    console.error('[CartDrawer] Error:', e);
-    // Fallback
-    const themeDrawer = document.querySelector('cart-drawer');
-    if (themeDrawer && typeof themeDrawer.open === 'function') {
-      themeDrawer.open();
-    }
   }
-}
+
 });
 </script>
  
