@@ -270,23 +270,48 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // 5. THEME DRAWERS INTERACTION
-  async function triggerCartDrawerOpen() {
-    const themeDrawer = document.querySelector('cart-drawer');
-    if (!themeDrawer) return;
+  // 5. THEME DRAWERS INTERACTION - FIXED VERSION
+async function triggerCartDrawerOpen() {
+  try {
+    // Step 1: Fetch updated cart sections
+    const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+    const sectionData = await refreshRes.json();
 
-    try {
-      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
-      const sectionData = await refreshRes.json();
-      
-      if (typeof themeDrawer.renderContents === 'function') {
-        themeDrawer.renderContents({ sections: sectionData });
-      } else if (typeof themeDrawer.open === 'function') {
-        themeDrawer.open();
+    // Step 2: Update cart-drawer HTML
+    const cartDrawerEl = document.querySelector('cart-drawer');
+    if (cartDrawerEl) {
+      if (sectionData['cart-drawer']) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = sectionData['cart-drawer'];
+        const newInner = tempDiv.querySelector('cart-drawer');
+        if (newInner) {
+          cartDrawerEl.innerHTML = newInner.innerHTML;
+        }
       }
-    } catch (e) {
-      if (typeof themeDrawer.open === 'function') themeDrawer.open();
+      // Step 3: Open drawer
+      if (typeof cartDrawerEl.open === 'function') {
+        cartDrawerEl.open();
+      }
+    }
+
+    // Step 4: Update cart bubble/count
+    const bubbleEl = document.querySelector('#cart-icon-bubble');
+    if (bubbleEl && sectionData['cart-icon-bubble']) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = sectionData['cart-icon-bubble'];
+      const newBubble = tempDiv.querySelector('#cart-icon-bubble');
+      if (newBubble) bubbleEl.innerHTML = newBubble.innerHTML;
+    }
+
+  } catch (e) {
+    console.error('[CartDrawer] Error:', e);
+    // Fallback
+    const themeDrawer = document.querySelector('cart-drawer');
+    if (themeDrawer && typeof themeDrawer.open === 'function') {
+      themeDrawer.open();
     }
   }
+}
 });
 </script>
  
