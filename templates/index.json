@@ -76,7 +76,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 55,
-            "icon_left": 61
+            "icon_left": 61,
+            "icon_top_mobile": 16,
+            "icon_left_mobile": 65
           }
         },
         "product_card_9DUWdh": {
@@ -86,7 +88,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 54,
-            "icon_left": 82
+            "icon_left": 82,
+            "icon_top_mobile": 30,
+            "icon_left_mobile": 65
           }
         },
         "product_card_HGtEDJ": {
@@ -96,7 +100,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 20,
-            "icon_left": 62
+            "icon_left": 62,
+            "icon_top_mobile": 30,
+            "icon_left_mobile": 65
           }
         },
         "product_card_rPXfiU": {
@@ -106,7 +112,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 19,
-            "icon_left": 70
+            "icon_left": 70,
+            "icon_top_mobile": 30,
+            "icon_left_mobile": 65
           }
         },
         "product_card_PDKyyw": {
@@ -116,7 +124,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 26,
-            "icon_left": 51
+            "icon_left": 51,
+            "icon_top_mobile": 30,
+            "icon_left_mobile": 65
           }
         },
         "product_card_bJALkn": {
@@ -126,7 +136,9 @@
             "custom_title": "",
             "custom_description": "",
             "icon_top": 39,
-            "icon_left": 72
+            "icon_left": 74,
+            "icon_top_mobile": 30,
+            "icon_left_mobile": 65
           }
         }
       },
