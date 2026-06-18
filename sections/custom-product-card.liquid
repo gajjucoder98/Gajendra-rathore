@@ -37,6 +37,7 @@
                     </div>
                     <div class="product-details">
                       <h3>{{ block.settings.custom_title | default: product.title }}</h3>
+                       <div class="product-price js-price-display">{{ product.price | money }}</div>
                       <div class="product-desc">
                         {{
                           block.settings.custom_description
@@ -45,7 +46,7 @@
                           | truncate: 120
                         }}
                       </div>
-                      <div class="product-price js-price-display">{{ product.price | money }}</div>
+                     
                     </div>
                   </div>
 
