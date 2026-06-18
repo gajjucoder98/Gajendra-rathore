@@ -336,6 +336,15 @@ document.addEventListener('DOMContentLoaded', function () {
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 24px;
   }
+  .color-swatch-label::before{
+  content:'';
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background: var(--swatch-color);
+  border:1px solid #ddd;
+  flex-shrink:0;
+}
 
   .product-card {
      position: relative;
