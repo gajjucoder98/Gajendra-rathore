@@ -263,44 +263,46 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 5. THEME DRAWERS INTERACTION - FIXED
+  // 5. DAWN THEME - CART DRAWER OPEN - FIXED
   async function triggerCartDrawerOpen() {
     try {
       const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
       const sectionData = await refreshRes.json();
 
-      // Cart Drawer HTML Update
       const cartDrawerEl = document.querySelector('cart-drawer');
-      if (cartDrawerEl) {
-        if (sectionData['cart-drawer']) {
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = sectionData['cart-drawer'];
-          const newInner = tempDiv.querySelector('cart-drawer');
-          if (newInner) {
-            cartDrawerEl.innerHTML = newInner.innerHTML;
-          }
-        }
-        // Open Drawer
-        if (typeof cartDrawerEl.open === 'function') {
-          cartDrawerEl.open();
-        }
+
+      // Dawn theme cart drawer HTML update
+      if (cartDrawerEl && sectionData['cart-drawer']) {
+        cartDrawerEl.innerHTML = new DOMParser()
+          .parseFromString(sectionData['cart-drawer'], 'text/html')
+          .querySelector('cart-drawer').innerHTML;
+
+        // Dawn specific open
+        cartDrawerEl.classList.add('animate', 'active');
+        cartDrawerEl.removeAttribute('aria-hidden');
+
+        const overlay = document.querySelector('#CartDrawer-Overlay');
+        if (overlay) overlay.classList.add('active');
+
+        document.body.classList.add('overflow-hidden');
       }
 
-      // Cart Bubble / Count Update
+      // Cart bubble / count update
       const bubbleEl = document.querySelector('#cart-icon-bubble');
       if (bubbleEl && sectionData['cart-icon-bubble']) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = sectionData['cart-icon-bubble'];
-        const newBubble = tempDiv.querySelector('#cart-icon-bubble');
-        if (newBubble) bubbleEl.innerHTML = newBubble.innerHTML;
+        bubbleEl.innerHTML = new DOMParser()
+          .parseFromString(sectionData['cart-icon-bubble'], 'text/html')
+          .querySelector('#cart-icon-bubble').innerHTML;
       }
 
     } catch (e) {
       console.error('[CartDrawer] Error:', e);
-      // Fallback
-      const themeDrawer = document.querySelector('cart-drawer');
-      if (themeDrawer && typeof themeDrawer.open === 'function') {
-        themeDrawer.open();
+      // Dawn fallback
+      document.dispatchEvent(new CustomEvent('cart:refresh'));
+      const cartDrawerEl = document.querySelector('cart-drawer');
+      if (cartDrawerEl) {
+        cartDrawerEl.classList.add('animate', 'active');
+        cartDrawerEl.removeAttribute('aria-hidden');
       }
     }
   }
