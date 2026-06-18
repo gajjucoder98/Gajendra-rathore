@@ -271,21 +271,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const cartDrawerEl = document.querySelector('cart-drawer');
 
-      // Dawn theme cart drawer HTML update
       if (cartDrawerEl && sectionData['cart-drawer']) {
-        cartDrawerEl.innerHTML = new DOMParser()
-          .parseFromString(sectionData['cart-drawer'], 'text/html')
-          .querySelector('cart-drawer').innerHTML;
+        const parsed = new DOMParser()
+          .parseFromString(sectionData['cart-drawer'], 'text/html');
 
-        // Dawn specific open
+        const newCartDrawer = parsed.querySelector('cart-drawer');
+        if (newCartDrawer) {
+          cartDrawerEl.innerHTML = newCartDrawer.innerHTML;
+        }
+
+        // is-empty remove karo - yahi main issue thi
+        cartDrawerEl.classList.remove('is-empty');
         cartDrawerEl.classList.add('animate', 'active');
         cartDrawerEl.removeAttribute('aria-hidden');
-
-        const overlay = document.querySelector('#CartDrawer-Overlay');
-        if (overlay) overlay.classList.add('active');
-
-        document.body.classList.add('overflow-hidden');
       }
+
+      // Overlay active karo
+      const overlay = document.querySelector('#CartDrawer-Overlay');
+      if (overlay) overlay.classList.add('active');
+
+      document.body.classList.add('overflow-hidden');
 
       // Cart bubble / count update
       const bubbleEl = document.querySelector('#cart-icon-bubble');
@@ -297,10 +302,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     } catch (e) {
       console.error('[CartDrawer] Error:', e);
-      // Dawn fallback
-      document.dispatchEvent(new CustomEvent('cart:refresh'));
       const cartDrawerEl = document.querySelector('cart-drawer');
       if (cartDrawerEl) {
+        cartDrawerEl.classList.remove('is-empty');
         cartDrawerEl.classList.add('animate', 'active');
         cartDrawerEl.removeAttribute('aria-hidden');
       }
