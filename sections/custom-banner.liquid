@@ -173,26 +173,26 @@
   ===================================================== */
 
   .bar-overlay-panel {
-    display: none;
-    flex: 1;
-    align-items: center;
-    justify-content: space-between;
+  display: none;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
   }
 
   .panel-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    margin-left: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-left: 60px;
   }
 
   .bar-message {
-    margin: 0;
-    color: #1c1c1c;
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 0.2px;
+  margin: 0;
+  color: #1c1c1c;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
   }
 
   /* =====================================================
@@ -200,38 +200,33 @@
   ===================================================== */
 
   .bar-btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 40px;
-    background: #fff544;
-    color: #000;
-    text-decoration: none;
-    overflow: hidden;
-    z-index: 1;
-    transition: color 0.35s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 40px;
+  background: #fff544;
+  color: #000;
+  text-decoration: none;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.35s ease;
   }
 
   .bar-btn::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: 0;
-    background: #000;
-    transition: width 0.35s ease;
-    z-index: -1;
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: #000;
+  transition: width 0.35s ease;
+  z-index: -1;
   }
 
   .bar-btn:hover::before {
   width: 100%;
   }
-.bar-btn:hover svg{
-    stroke:#fff;
-}
-.bar-btn:hover svg path{
-    fill:#fff;
-}
+
   .bar-btn:hover {
   color: #fff;
   }
@@ -313,17 +308,17 @@
   ========================================== */
 
   .bar-brand {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: auto;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 10000;
-    transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
   }
 
   /* ==========================================
@@ -331,19 +326,19 @@
   ========================================== */
 
   .base-layer {
-    position: relative;
-    opacity: 1;
-    transform: translateX(0);
-    transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .overlay-layer {
-    display: block !important;
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(6px);
-    transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+  display: block !important;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .is-active .base-layer {
@@ -467,7 +462,7 @@
     font-weight: 500;
   }
 
-  .gift-guide-banner__description p{
+  .gift-guide-banner__description {
     max-width: 500px;
     margin-bottom: 32px;
     font-size: 20px;
@@ -521,10 +516,10 @@
       margin: 25px 0 15px;
       font-size: 30px;
       line-height: 1.1;
-      font-weight: 500;
+      font-weight: 600;
     }
 
-    .gift-guide-banner__description p{
+    .gift-guide-banner__description {
       max-width: 100%;
       margin-bottom: 25px;
       padding: 0 10px;
