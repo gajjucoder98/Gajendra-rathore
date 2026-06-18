@@ -114,7 +114,7 @@
             "icon_top": 19,
             "icon_left": 70,
             "icon_top_mobile": 14,
-            "icon_left_mobile": 65
+            "icon_left_mobile": 64
           }
         },
         "product_card_PDKyyw": {
@@ -125,8 +125,8 @@
             "custom_description": "",
             "icon_top": 26,
             "icon_left": 51,
-            "icon_top_mobile": 30,
-            "icon_left_mobile": 65
+            "icon_top_mobile": 13,
+            "icon_left_mobile": 62
           }
         },
         "product_card_bJALkn": {
@@ -137,7 +137,7 @@
             "custom_description": "",
             "icon_top": 39,
             "icon_left": 74,
-            "icon_top_mobile": 30,
+            "icon_top_mobile": 13,
             "icon_left_mobile": 65
           }
         }
