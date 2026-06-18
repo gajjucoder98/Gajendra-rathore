@@ -69,18 +69,6 @@
     "custom_product_card_NBaknp": {
       "type": "custom-product-card",
       "blocks": {
-        "product_card_WYfwAt": {
-          "type": "product_card",
-          "settings": {
-            "product": "yellow-wool-jumper",
-            "custom_title": "",
-            "custom_description": "",
-            "icon_top": 30,
-            "icon_left": 65,
-            "icon_top_mobile": 30,
-            "icon_left_mobile": 65
-          }
-        },
         "product_card_akcEqt": {
           "type": "product_card",
           "settings": {
@@ -155,7 +143,6 @@
         }
       },
       "block_order": [
-        "product_card_WYfwAt",
         "product_card_akcEqt",
         "product_card_9DUWdh",
         "product_card_HGtEDJ",
