@@ -121,354 +121,462 @@
 </script>
 
 <style>
-    /* ========================================== */
-    /* DESKTOP CORE STYLES                        */
-    /* ========================================== */
-    .tisso-gift-bar {
-      background-color: #f6f6f6;
-      border-bottom: 1px solid #e2e2e2;
-      position: relative;
-      font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      z-index: 9999;
-      width: 100%;
-    }
+      /* =====================================================
+  TISSO GIFT BAR & GIFT GUIDE BANNER STYLESHEET
+  ===================================================== */
 
-    .bar-container {
-      max-width: 100%;
-      height: 75px;
-      margin: 0 auto;
-      padding: 0 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .bar-toggle {
-      display: none;
-    }
-    .bar-brand {
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-    .brand-img-element {
-      max-height: 28px;
-      width: auto;
-      display: block;
-      object-fit: contain;
-    }
-    .overlay-layer {
-      display: none !important;
-    }
+  /* =====================================================
 
-    .bar-overlay-panel {
-      display: none;
-      align-items: center;
-      flex: 1;
-      justify-content: space-between;
-    }
-    .panel-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin-left: 60px;
-    }
-    .bar-message {
-      font-size: 14px;
-      color: #1c1c1c;
-      margin: 0;
-      font-weight: 400;
-      letter-spacing: 0.2px;
-    }
-    .bar-btn {
-       position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 40px;
-    background: #FFF544;
-    color: #000;
-    text-decoration: none;
-    overflow: hidden;
-    z-index: 1;
-    transition: color .35s ease;
-    }
-    .bar-btn:before{
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0%;
-    height: 100%;
-    background: #000;
-    transition: width .35s ease;
-    z-index: -1;
+  1. DESKTOP - GIFT BAR
+     ===================================================== */
+
+  .tisso-gift-bar {
+  background-color: #f6f6f6;
+  border-bottom: 1px solid #e2e2e2;
+  position: relative;
+  width: 100%;
+  z-index: 9999;
+  font-family: "Futura", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
-  .bar-btn:hover::before{
-    width: 100%;
+  .bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  height: 75px;
+  margin: 0 auto;
+  padding: 0 40px;
   }
-    .bar-btn:hover {  color: #fff; }
-    .arrow-icon { display: inline-block; transition: transform 0.15s ease; }
-    .bar-btn:hover .arrow-icon { transform: translateX(3px); }
 
-    /* ========================================== */
-    /* MOBILE BREAKPOINT TARGET                   */
-    /* ========================================== */
-    @media screen and (max-width: 989px) {
-      .bar-container {
-        height: 65px;
-        padding: 0 20px;
-        position: relative;
-      }
-      .bar-message-phn,
-      .bar-btn-phn{
-      display:none;}
-      .bar-toggle {
-        display: flex;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 10px 10px 10px 0;
-        z-index: 10001;
-      }
-      .hamburger-icon {
-        width: 22px;
-        height: 14px;
-        position: relative;
-      }
-      .hamburger-icon span {
-        display: block;
-        position: absolute;
-        height: 2px;
-        width: 100%;
-        background: #000000;
-        transition: all 0.25s ease-in-out;
-      }
-      .hamburger-icon span:nth-child(1) { top: 0; }
-      .hamburger-icon span:nth-child(2) { top: 6px; }
-      .hamburger-icon span:nth-child(3) { top: 12px; }
+  .bar-toggle {
+  display: none;
+  }
 
-      .is-active .hamburger-icon span:nth-child(1) { top: 6px; transform: rotate(45deg); }
-      .is-active .hamburger-icon span:nth-child(2) { opacity: 0; }
-      .is-active .hamburger-icon span:nth-child(3) { top: 6px; transform: rotate(-45deg); }
+  .bar-brand {
+  display: flex;
+  align-items: center;
+  position: relative;
+  }
 
-      .bar-brand {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        z-index: 10000;
-        width: auto;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+  .brand-img-element {
+  display: block;
+  width: auto;
+  max-height: 28px;
+  object-fit: contain;
+  }
 
-      /* Standard Default Positions */
-      .base-layer {
-        position: relative;
-        opacity: 1;
-        transform: translateX(0);
-        transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
-      }
+  .overlay-layer {
+  display: none !important;
+  }
 
-      .overlay-layer {
-        display: block !important;
-        position: absolute;
-        opacity: 0;
-        transform: translateX(6px);
-        pointer-events: none;
-        transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
-      }
+  /* =====================================================
+  DESKTOP CONTENT AREA
+  ===================================================== */
 
-      /* ========================================== */
-      /* OPEN ANIMATION STATE (Right to Left)       */
-      /* ========================================== */
-      .is-active .base-layer {
-        transform: translateX(-4px);
-      }
+  .bar-overlay-panel {
+  display: none;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  }
 
-      .is-active .overlay-layer {
-        transform: translateX(-4px);
-        animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-      }
+  .panel-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-left: 60px;
+  }
 
-      @keyframes clearOverlayOnActive {
-        0% { opacity: 0.4; }
-        75% { opacity: 0.15; }
-        100% { opacity: 0; }
-      }
+  .bar-message {
+  margin: 0;
+  color: #1c1c1c;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  }
 
-      /* ========================================== */
-      /* CLOSE ANIMATION STATE (Left to Right Mirror)*/
-      /* ========================================== */
-      .is-closing .base-layer {
-        transform: translateX(0); /* Base layer smoothly left to right center aayi */
-      }
+  /* =====================================================
+  BUTTON STYLES
+  ===================================================== */
 
-      .is-closing .overlay-layer {
-        transform: translateX(6px); /* Overlay clone wapas right side shift hua */
-        animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-      }
+  .bar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 40px;
+  background: #fff544;
+  color: #000;
+  text-decoration: none;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 0.35s ease;
+  }
 
-      @keyframes clearOverlayOnClosing {
-        0% { opacity: 0; transform: translateX(-4px); }
-        30% { opacity: 0.3; }
-        100% { opacity: 0; transform: translateX(6px); }
-      }
+  .bar-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: #000;
+  transition: width 0.35s ease;
+  z-index: -1;
+  }
 
-      /* Dropdown Overlay Panel */
-      .bar-overlay-panel {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: #f6f6f6;
-        border-bottom: 1px solid #e2e2e2;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        display: block;
-        transform: translateY(-15px);
-        opacity: 0;
-        visibility: hidden;
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-      }
-      .is-active .bar-overlay-panel {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-        display:block;
-      }
-      .panel-inner {
-        flex-direction: column;
-        max-width: 100%;
-        margin-left: 0;
-        padding: 24px 20px 32px 20px;
-        text-align: center;
-        gap: 20px;
-      }
-      .bar-message {
-        font-size: 16px;
-        text-align: center;
-      }
-      .bar-btn {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 14px 45px;
-      }
-    }
+  .bar-btn:hover::before {
+  width: 100%;
+  }
 
-    .gift-guide-banner{
-      position:relative;
-      min-height:820px;
-      background-image:var(--desktop-bg);
-      background-size:cover;
-      background-position:left;
-      background-repeat:no-repeat;
-      display:flex;
-      flex-direction:column;
-    }
+  .bar-btn:hover {
+  color: #fff;
+  }
 
-    .gift-guide-banner__content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        max-width: 600px;
-        align-items: flex-start;
-        padding: 0px 32px;
-        padding-bottom: 60px;
-    }
+  .arrow-icon {
+  display: inline-block;
+  transition: transform 0.15s ease;
+  }
 
-    .gift-guide-banner__heading{
-      font-size:70px;
-      line-height:1;
-      font-weight:500;
-      margin:0 0 15px;
-    }
+  .bar-btn:hover .arrow-icon {
+  transform: translateX(3px);
+  }
 
-    .gift-guide-banner__description{
-      max-width:500px;
-      font-size:20px;
-      line-height:1.2;
-      margin-bottom:32px;
-    }
+  /* =====================================================
+  MOBILE STYLES (≤ 989px)
+  ===================================================== */
 
-    .gift-guide-banner__button {
-        width: max-content;
-        background: #000;
-        color: #fff;
-        text-decoration: none;
-        padding: 11px 49px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 400;
-        font-size: 16px;
-    }
+  @media screen and (max-width: 989px) {
 
-    .gift-guide-banner__bottom-strip{
-      background:#F5F5F5;
-      text-align:center;
-      padding:10px;
-      font-size:16px;
-      font-weight:400;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
+  .bar-container {
+  position: relative;
+  height: 65px;
+  padding: 0 20px;
+  }
 
+  .bar-message-phn,
+  .bar-btn-phn {
+  display: none;
+  }
 
-    @media screen and (max-width: 749px){
+  /* ==========================================
+  HAMBURGER MENU
+  ========================================== */
 
-      .gift-guide-banner{
-        min-height: 620px;
-        background-image: var(--mobile-bg);
-        background-position: center bottom;
-      }
+  .bar-toggle {
+  display: flex;
+  padding: 10px 10px 10px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10001;
+  }
 
-      .gift-guide-banner__content{
-        padding: 40px 24px;
-        align-items: center;
-        text-align: center;
-        justify-content: space-between;
-        max-width: 100%;
-      }
+  .hamburger-icon {
+  position: relative;
+  width: 22px;
+  height: 14px;
+  }
 
-      .gift-guide-banner__heading{
-        font-size: 30px;
-        line-height: 1.1;
-        margin: 25px 0 15px 0;
-        font-weight: 600;
-      }
+  .hamburger-icon span {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #000;
+  transition: all 0.25s ease-in-out;
+  }
 
-      .gift-guide-banner__description{
-        font-size: 16px;
-        line-height: 1.4;
-        margin-bottom: 25px;
-        max-width: 100%;
-        padding: 0 10px;
-      }
+  .hamburger-icon span:nth-child(1) { top: 0; }
+  .hamburger-icon span:nth-child(2) { top: 6px; }
+  .hamburger-icon span:nth-child(3) { top: 12px; }
 
-      .gift-guide-banner__button {
-        width: 80%;
-               max-width: 193px;
-            justify-content: center;
-            padding: 9px 30px;
-        font-size: 15px;
-        letter-spacing: 0.05em;
-      }
+  .is-active .hamburger-icon span:nth-child(1) {
+  top: 6px;
+  transform: rotate(45deg);
+  }
 
-      .gift-guide-banner__bottom-strip {
-        font-size: 13px;
-        padding: 12px 10px;
-        letter-spacing: 0.06em;
-         white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis
-      }
-    }
+  .is-active .hamburger-icon span:nth-child(2) {
+  opacity: 0;
+  }
+
+  .is-active .hamburger-icon span:nth-child(3) {
+  top: 6px;
+  transform: rotate(-45deg);
+  }
+
+  /* ==========================================
+  LOGO POSITIONING
+  ========================================== */
+
+  .bar-brand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: auto;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  }
+
+  /* ==========================================
+  LOGO ANIMATION
+  ========================================== */
+
+  .base-layer {
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .overlay-layer {
+  display: block !important;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .is-active .base-layer {
+  transform: translateX(-4px);
+  }
+
+  .is-active .overlay-layer {
+  transform: translateX(-4px);
+  animation: clearOverlayOnActive 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
+  @keyframes clearOverlayOnActive {
+  0% { opacity: 0.4; }
+  75% { opacity: 0.15; }
+  100% { opacity: 0; }
+  }
+
+  .is-closing .base-layer {
+  transform: translateX(0);
+  }
+
+  .is-closing .overlay-layer {
+  transform: translateX(6px);
+  animation: clearOverlayOnClosing 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
+  @keyframes clearOverlayOnClosing {
+  0% {
+  opacity: 0;
+  transform: translateX(-4px);
+  }
+
+  ```
+  30% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  ```
+
+  }
+
+  /* ==========================================
+  DROPDOWN PANEL
+  ========================================== */
+
+  .bar-overlay-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  display: block;
+  background: #f6f6f6;
+  border-bottom: 1px solid #e2e2e2;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+
+  ```
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px);
+
+  transition:
+    transform .4s cubic-bezier(0.16,1,0.3,1),
+    opacity .3s ease;
+  ```
+
+  }
+
+  .is-active .bar-overlay-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  }
+
+  .panel-inner {
+  flex-direction: column;
+  gap: 20px;
+  max-width: 100%;
+  margin-left: 0;
+  padding: 24px 20px 32px;
+  text-align: center;
+  }
+
+  .bar-message {
+  font-size: 16px;
+  text-align: center;
+  }
+
+  .bar-btn {
+  width: 100%;
+  padding: 14px 45px;
+  box-sizing: border-box;
+  }
+  }
+
+  /* =====================================================
+  GIFT GUIDE BANNER
+  ===================================================== */
+
+  .gift-guide-banner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 820px;
+
+  background-image: var(--desktop-bg);
+  background-repeat: no-repeat;
+  background-position: left;
+  background-size: cover;
+  }
+
+  .gift-guide-banner__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+
+  max-width: 600px;
+  padding: 0 32px 60px;
+  }
+
+  .gift-guide-banner__heading {
+  margin: 0 0 15px;
+  font-size: 70px;
+  line-height: 1;
+  font-weight: 500;
+  }
+
+  .gift-guide-banner__description {
+  max-width: 500px;
+  margin-bottom: 32px;
+  font-size: 20px;
+  line-height: 1.2;
+  }
+
+  .gift-guide-banner__button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: max-content;
+  padding: 11px 49px;
+
+  background: #000;
+  color: #fff;
+  text-decoration: none;
+
+  font-size: 16px;
+  font-weight: 400;
+  }
+
+  .gift-guide-banner__bottom-strip {
+  padding: 10px;
+  background: #f5f5f5;
+  text-align: center;
+
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  }
+
+  /* =====================================================
+  GIFT GUIDE BANNER - MOBILE (≤ 749px)
+  ===================================================== */
+
+  @media screen and (max-width: 749px) {
+
+  .gift-guide-banner {
+  min-height: 620px;
+  background-image: var(--mobile-bg);
+  background-position: center bottom;
+  }
+
+  .gift-guide-banner__content {
+  max-width: 100%;
+  padding: 40px 24px;
+
+  ```
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  ```
+
+  }
+
+  .gift-guide-banner__heading {
+  margin: 25px 0 15px;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 600;
+  }
+
+  .gift-guide-banner__description {
+  max-width: 100%;
+  margin-bottom: 25px;
+  padding: 0 10px;
+
+  ```
+  font-size: 16px;
+  line-height: 1.4;
+  ```
+
+  }
+
+  .gift-guide-banner__button {
+  width: 80%;
+  max-width: 193px;
+  justify-content: center;
+
+  ```
+  padding: 9px 30px;
+  font-size: 15px;
+  letter-spacing: .05em;
+  ```
+
+  }
+
+  .gift-guide-banner__bottom-strip {
+  padding: 12px 10px;
+
+  ```
+  font-size: 13px;
+  letter-spacing: .06em;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  ```
+
+  }
+  }
 </style>
 
 {% schema %}
