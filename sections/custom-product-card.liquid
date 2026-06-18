@@ -134,7 +134,9 @@
     </div>
   </div>
 </section>
+यहाँ पूरी स्क्रिप्ट (`<script>` टैग और उसके अंदर का पूरा कोड) एक साथ दी गई है। इसे आप अपने कोड में पुराने स्क्रिप्ट हिस्से से बदल सकते हैं:
 
+```javascript
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -144,20 +146,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 1. OPEN / CLOSE POPUP ACTIONS
-    document.querySelectorAll('.product-card').forEach((card) => {
-      const plusIcon = card.querySelector('.product-card__plus-icon');
+  document.querySelectorAll('.product-card').forEach((card) => {
+    const plusIcon = card.querySelector('.product-card__plus-icon');
 
-      if (plusIcon) {
-        plusIcon.addEventListener('click', (e) => {
-          // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
-          e.stopPropagation();
-      card.querySelector('.js-popup-backdrop').classList.add('active');
-      document.body.style.overflow = 'hidden';
-    });
-      }
+    if (plusIcon) {
+      plusIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        card.querySelector('.js-popup-backdrop').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
   });
 
-    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
     closeTarget.addEventListener('click', function (e) {
       e.stopPropagation();
       this.closest('.js-popup-backdrop').classList.remove('active');
@@ -177,20 +178,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
     const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
 
-    // Filter matching variants array from JSON
-      return (
-        productData.variants.find((variant) => {
-          const vOpts = variant.options.map((o) => cleanVal(o));
-      if (val1 && val2) {
-        return vOpts.includes(val1) && vOpts.includes(val2);
-      }
-      return vOpts.includes(val1) || vOpts.includes(val2);
-        }) || productData.variants[0]
-      );
+    return (
+      productData.variants.find((variant) => {
+        const vOpts = variant.options.map((o) => cleanVal(o));
+        if (val1 && val2) {
+          return vOpts.includes(val1) && vOpts.includes(val2);
+        }
+        return vOpts.includes(val1) || vOpts.includes(val2);
+      }) || productData.variants[0]
+    );
   }
 
   // 3. OPTION CHANGED & PRICE LIVE UPDATE
-    document.querySelectorAll('.product-card').forEach((card) => {
+  document.querySelectorAll('.product-card').forEach((card) => {
     card.addEventListener('change', function (e) {
       if (!e.target.classList.contains('js-option-selector')) return;
 
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // 4. AJAX SUBMIT AND GIFT VALIDATION
-    document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
+  document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
     btn.addEventListener('click', async function (e) {
       e.stopPropagation();
       const card = this.closest('.product-card');
@@ -246,16 +246,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const response = await fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: itemsPayload }),
+          body: JSON.stringify({ items: itemsPayload }),
         });
 
         if (!response.ok) throw new Error('API Rejection');
+
+        // Shopify Global State Update (खाली कार्ट को पहली बार में जगाने के लिए)
+        if (window.Shopify && window.Shopify.onItemAdded) {
+          window.Shopify.onItemAdded(itemsPayload[0]);
+        }
 
         this.querySelector('span').textContent = 'ADDED ✓';
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
-        triggerCartDrawerOpen();
+        // बैकएंड डेटा सिंक होने के लिए हल्का सा डिले देकर ड्रॉवर ट्रिगर करें
+        setTimeout(() => {
+          triggerCartDrawerOpen();
+        }, 100);
 
       } catch (err) {
         console.error('[CartAPI] Exception handling triggered:', err);
@@ -275,6 +283,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!themeDrawer) return;
 
     try {
+      // Dawn आधारित थीम्स के लिए सीधे एक्टिवेट स्टेट सेट करें
+      if (typeof themeDrawer.setActive === 'function') {
+        themeDrawer.setActive(true);
+      }
+
       const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
       const sectionData = await refreshRes.json();
       
@@ -286,9 +299,16 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
       if (typeof themeDrawer.open === 'function') themeDrawer.open();
     }
+
+    // बबल काउंटर और कार्ट स्टेट सिंक करने के लिए ग्लोबल इवेंट फायर करें
+    document.dispatchEvent(new CustomEvent('cart:updated', {
+      bubbles: true
+    }));
   }
 });
 </script>
+
+```
  
 <style>
   /* ═══════════════════════════════════════════════════════════════════════════
