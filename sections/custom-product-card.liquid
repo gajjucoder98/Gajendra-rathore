@@ -337,13 +337,17 @@ document.addEventListener('DOMContentLoaded', function () {
     gap: 24px;
   }
   .color-swatch-label::before{
-  content:'';
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background: var(--swatch-color);
-  border:1px solid #ddd;
-  flex-shrink:0;
+     content: '';
+    width: 6px;
+    height: 100%;
+    /* border-radius: 50%; */
+    background: var(--swatch-color);
+    /* border: 1px solid #ddd; */
+    flex-shrink: 0;
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 0;
 }
 
   .product-card {
@@ -428,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
   .color-swatch-item:last-child { border-right: none; }
   .color-swatch-input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
   .color-swatch-label { display: block; padding: 12px; background: transparent; color: #000; font-size: 15px; cursor: pointer; transition: all 0.2s; }
-  .color-swatch-input:checked + .color-swatch-label { background: #ffffff; color: #000000; font-weight: bold; }
+  .color-swatch-input:checked + .color-swatch-label { position:relative;background: #ffffff; color: #000000; font-weight: bold; }
 
   .size-dropdown-wrapper { position: relative; width: 100%; }
   .variant-select { width: 100%; padding: 14px 40px 14px 16px;  border: 1px solid #000; background: transparent; color: #000; font-size: 15px; appearance: none; -webkit-appearance: none; cursor: pointer; }
