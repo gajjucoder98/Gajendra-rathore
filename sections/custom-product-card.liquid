@@ -243,13 +243,13 @@ document.addEventListener('DOMContentLoaded', function () {
       this.querySelector('span').textContent = 'ADDING...';
 
       try {
-        // Dawn थीम को नया HTML फेच करने के लिए 'sections' पैरामीटर के साथ रिक्वेस्ट भेजनी पड़ती है
+        // Dawn थीम के कार्ट ड्रॉवर को सही सेक्शन आर्किटेक्चर चाहिए होता है
         const response = await fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             items: itemsPayload,
-            sections: 'cart-drawer,cart-icon-bubble' // यह लाइन बैकएंड से सीधा ताजा HTML मंगवाएगी
+            sections: 'cart-drawer,cart-icon-bubble'
           }),
         });
 
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function () {
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
-        // ड्रॉवर को फोर्स रिफ्रेश करके ओपन करने के लिए फंक्शन कॉल
-        triggerCartDrawerOpen(responseData.sections);
+        // प्राप्त सेक्शन्स का डेटा सीधा ट्रिगर फंक्शन में भेजें
+        triggerCartDrawerOpen(responseData);
 
       } catch (err) {
         console.error('[CartAPI] Exception handling triggered:', err);
@@ -275,41 +275,49 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 5. THEME DRAWERS INTERACTION (Dawn 100% Fix)
-  function triggerCartDrawerOpen(sectionsHTML) {
+  // 5. THEME DRAWERS INTERACTION (Dawn Pure Native Approach)
+  function triggerCartDrawerOpen(cartData) {
     const themeDrawer = document.querySelector('cart-drawer');
+    const cartIconBubble = document.querySelector('#cart-icon-bubble');
+    
     if (!themeDrawer) return;
 
-    // अगर /cart/add.js से डायरेक्ट ताजा सेक्शन्स का HTML मिल गया है, तो उसे सीधे इंजेक्ट करें
-    if (sectionsHTML && sectionsHTML['cart-drawer']) {
-      const parsedHTML = new DOMParser().parseFromString(sectionsHTML['cart-drawer'], 'text/html');
+    // Dawn थीम का अपना रेंडरिंग फंक्शन जो खाली कार्ट को फ्रेश डेटा से री-पॉपुलेट करता है
+    if (cartData && cartData.sections) {
       
-      // पुराने इनर कंटेनर को नए से बदलें (यही वो खाली सफेदी को हटाएगा)
-      const currentDrawerInner = themeDrawer.querySelector('.drawer__inner');
-      const newDrawerInner = parsedHTML.querySelector('.drawer__inner');
-      
-      if (currentDrawerInner && newDrawerInner) {
-        currentDrawerInner.innerHTML = newDrawerInner.innerHTML;
+      // 1. अगर थीम में renderContents फंक्शन मौजूद है (यह Dawn का स्टैण्डर्ड तरीका है)
+      if (typeof themeDrawer.renderContents === 'function') {
+        themeDrawer.renderContents(cartData);
+      } else {
+        // 2. बैकअप तरीका: अगर डायरेक्ट फंक्शन नहीं चल रहा, तो खुद थीम का इवेंट ट्रिगर करें जो कार्ट को रीलोड करता है
+        const parsedHTML = new DOMParser().parseFromString(cartData.sections['cart-drawer'], 'text/html');
+        const sectionInner = parsedHTML.querySelector('#cart-drawer') || parsedHTML.querySelector('.drawer__inner');
+        const targetInner = themeDrawer.querySelector('#cart-drawer') || themeDrawer.querySelector('.drawer__inner');
+        
+        if (sectionInner && targetInner) {
+          targetInner.innerHTML = sectionInner.innerHTML;
+        }
       }
-      
-      // बबल काउंटर को अपडेट करें
-      if (sectionsHTML['cart-icon-bubble']) {
-        const bubbleContainer = document.querySelector('#cart-icon-bubble');
-        if (bubbleContainer) bubbleContainer.innerHTML = sectionsHTML['cart-icon-bubble'];
+
+      // बबल काउंटर (Cart Icon Count) को भी अपडेट करें
+      if (cartIconBubble && cartData.sections['cart-icon-bubble']) {
+        cartIconBubble.innerHTML = cartData.sections['cart-icon-bubble'];
       }
     }
 
-    // अब ड्रॉवर को ओपन करने के लिए इवेंट और क्लास ट्रिगर करें
+    // ड्रॉवर को ओपन स्टेट में लाएं
     if (typeof themeDrawer.open === 'function') {
       themeDrawer.open();
+    } else if (typeof themeDrawer.setActive === 'function') {
+      themeDrawer.setActive(true);
     } else {
-      // अगर open() मेथड नहीं मिलता तो मैनुअली क्लास ऐड करें
       themeDrawer.classList.add('active');
     }
 
-    // standard Dawn थीम कार्ट स्क्रिप्ट्स को नोटिफाई करें
+    // पूरे डोम को बताएं कि कार्ट बदल चुकी है ताकि कंपोनेंट्स एक्टिवेट हो जाएं
     document.dispatchEvent(new CustomEvent('cart:updated', {
-      bubbles: true
+      bubbles: true,
+      detail: { cart: cartData }
     }));
   }
 });
