@@ -135,8 +135,6 @@
   </div>
 </section>
 
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -146,19 +144,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 1. OPEN / CLOSE POPUP ACTIONS
-  document.querySelectorAll('.product-card').forEach((card) => {
-    const plusIcon = card.querySelector('.product-card__plus-icon');
+    document.querySelectorAll('.product-card').forEach((card) => {
+      const plusIcon = card.querySelector('.product-card__plus-icon');
 
-    if (plusIcon) {
-      plusIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        card.querySelector('.js-popup-backdrop').classList.add('active');
-        document.body.style.overflow = 'hidden';
-      });
-    }
+      if (plusIcon) {
+        plusIcon.addEventListener('click', (e) => {
+          // e.stopPropagation() यह पक्का करेगा कि क्लिक इवेंट कार्ड के अन्य हिस्सों तक न फैले
+          e.stopPropagation();
+      card.querySelector('.js-popup-backdrop').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+      }
   });
 
-  document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
+    document.querySelectorAll('.js-popup-close, .js-popup-backdrop').forEach((closeTarget) => {
     closeTarget.addEventListener('click', function (e) {
       e.stopPropagation();
       this.closest('.js-popup-backdrop').classList.remove('active');
@@ -178,19 +177,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const val1 = radioChecked ? cleanVal(radioChecked.value) : '';
     const val2 = dropdownSelect ? cleanVal(dropdownSelect.value) : '';
 
-    return (
-      productData.variants.find((variant) => {
-        const vOpts = variant.options.map((o) => cleanVal(o));
-        if (val1 && val2) {
-          return vOpts.includes(val1) && vOpts.includes(val2);
-        }
-        return vOpts.includes(val1) || vOpts.includes(val2);
-      }) || productData.variants[0]
-    );
+    // Filter matching variants array from JSON
+      return (
+        productData.variants.find((variant) => {
+          const vOpts = variant.options.map((o) => cleanVal(o));
+      if (val1 && val2) {
+        return vOpts.includes(val1) && vOpts.includes(val2);
+      }
+      return vOpts.includes(val1) || vOpts.includes(val2);
+        }) || productData.variants[0]
+      );
   }
 
   // 3. OPTION CHANGED & PRICE LIVE UPDATE
-  document.querySelectorAll('.product-card').forEach((card) => {
+    document.querySelectorAll('.product-card').forEach((card) => {
     card.addEventListener('change', function (e) {
       if (!e.target.classList.contains('js-option-selector')) return;
 
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // 4. AJAX SUBMIT AND GIFT VALIDATION
-  document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
+    document.querySelectorAll('.js-add-to-cart').forEach((btn) => {
     btn.addEventListener('click', async function (e) {
       e.stopPropagation();
       const card = this.closest('.product-card');
@@ -243,25 +243,19 @@ document.addEventListener('DOMContentLoaded', function () {
       this.querySelector('span').textContent = 'ADDING...';
 
       try {
-        // Dawn थीम के कार्ट ड्रॉवर को सही सेक्शन आर्किटेक्चर चाहिए होता है
         const response = await fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            items: itemsPayload,
-            sections: 'cart-drawer,cart-icon-bubble'
-          }),
+            body: JSON.stringify({ items: itemsPayload }),
         });
 
         if (!response.ok) throw new Error('API Rejection');
-        const responseData = await response.json();
 
         this.querySelector('span').textContent = 'ADDED ✓';
         card.querySelector('.js-popup-backdrop').classList.remove('active');
         document.body.style.overflow = '';
 
-        // प्राप्त सेक्शन्स का डेटा सीधा ट्रिगर फंक्शन में भेजें
-        triggerCartDrawerOpen(responseData);
+        triggerCartDrawerOpen();
 
       } catch (err) {
         console.error('[CartAPI] Exception handling triggered:', err);
@@ -275,50 +269,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 5. THEME DRAWERS INTERACTION (Dawn Pure Native Approach)
-  function triggerCartDrawerOpen(cartData) {
+  // 5. THEME DRAWERS INTERACTION
+  async function triggerCartDrawerOpen() {
     const themeDrawer = document.querySelector('cart-drawer');
-    const cartIconBubble = document.querySelector('#cart-icon-bubble');
-    
     if (!themeDrawer) return;
 
-    // Dawn थीम का अपना रेंडरिंग फंक्शन जो खाली कार्ट को फ्रेश डेटा से री-पॉपुलेट करता है
-    if (cartData && cartData.sections) {
+    try {
+      const refreshRes = await fetch('/?sections=cart-drawer,cart-icon-bubble');
+      const sectionData = await refreshRes.json();
       
-      // 1. अगर थीम में renderContents फंक्शन मौजूद है (यह Dawn का स्टैण्डर्ड तरीका है)
       if (typeof themeDrawer.renderContents === 'function') {
-        themeDrawer.renderContents(cartData);
-      } else {
-        // 2. बैकअप तरीका: अगर डायरेक्ट फंक्शन नहीं चल रहा, तो खुद थीम का इवेंट ट्रिगर करें जो कार्ट को रीलोड करता है
-        const parsedHTML = new DOMParser().parseFromString(cartData.sections['cart-drawer'], 'text/html');
-        const sectionInner = parsedHTML.querySelector('#cart-drawer') || parsedHTML.querySelector('.drawer__inner');
-        const targetInner = themeDrawer.querySelector('#cart-drawer') || themeDrawer.querySelector('.drawer__inner');
-        
-        if (sectionInner && targetInner) {
-          targetInner.innerHTML = sectionInner.innerHTML;
-        }
+        themeDrawer.renderContents({ sections: sectionData });
+      } else if (typeof themeDrawer.open === 'function') {
+        themeDrawer.open();
       }
-
-      // बबल काउंटर (Cart Icon Count) को भी अपडेट करें
-      if (cartIconBubble && cartData.sections['cart-icon-bubble']) {
-        cartIconBubble.innerHTML = cartData.sections['cart-icon-bubble'];
-      }
+    } catch (e) {
+      if (typeof themeDrawer.open === 'function') themeDrawer.open();
     }
-
-    // ड्रॉवर को ओपन स्टेट में लाएं
-    if (typeof themeDrawer.open === 'function') {
-      themeDrawer.open();
-    } else if (typeof themeDrawer.setActive === 'function') {
-      themeDrawer.setActive(true);
-    } else {
-      themeDrawer.classList.add('active');
-    }
-
-    // पूरे डोम को बताएं कि कार्ट बदल चुकी है ताकि कंपोनेंट्स एक्टिवेट हो जाएं
-    document.dispatchEvent(new CustomEvent('cart:updated', {
-      bubbles: true,
-      detail: { cart: cartData }
-    }));
   }
 });
 </script>
