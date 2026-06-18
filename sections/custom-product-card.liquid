@@ -123,7 +123,6 @@
                     <span class="btn-arrow"><svg width="36" height="12" viewBox="0 0 36 12" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M0.75 4.77295L9.20657e-08 4.77295L-9.20657e-08 6.27295L0.75 6.27295L0.75 4.77295ZM34.9798 6.05328C35.2727 5.76039 35.2727 5.28551 34.9798 4.99262L30.2068 0.21965C29.9139 -0.0732432 29.4391 -0.0732433 29.1462 0.21965C28.8533 0.512544 28.8533 0.987417 29.1462 1.28031L33.3888 5.52295L29.1462 9.76559C28.8533 10.0585 28.8533 10.5334 29.1462 10.8263C29.4391 11.1191 29.9139 11.1191 30.2068 10.8263L34.9798 6.05328ZM0.75 6.27295L34.4495 6.27295L34.4495 4.77295L0.75 4.77295L0.75 6.27295Z" fill="white"/>
 </svg>
-
 </span>
                   </button>
                 </div>
@@ -157,6 +156,30 @@
       return (str || '').toLowerCase().trim();
     }
 
+    // TOAST HELPER
+    function showToast(title, message) {
+      let container = document.querySelector('.ppc-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'ppc-toast-container';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      toast.className = 'ppc-toast';
+      toast.innerHTML = `
+        <div class="ppc-toast__icon">&#10005;</div>
+        <div>
+          <span class="ppc-toast__label">${title}</span>
+          <span class="ppc-toast__msg">${message}</span>
+        </div>`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 350);
+      }, 2800);
+    }
+
     // 1. OPEN / CLOSE POPUP
     document.querySelectorAll('.product-card').forEach((card) => {
       const plusIcon = card.querySelector('.product-card__plus-icon');
@@ -184,37 +207,29 @@
       const hiddenSelect = selectBox.closest('.size-dropdown-wrapper').querySelector('.variant-select');
       const textEl = selectBox.querySelector('.custom-select-text');
 
-      // Toggle open/close
       trigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Close all others
         document.querySelectorAll('.custom-select-box.open').forEach((el) => {
           if (el !== selectBox) el.classList.remove('open');
         });
         selectBox.classList.toggle('open');
       });
 
-      // Option select
       options.forEach((option) => {
         option.addEventListener('click', (e) => {
           e.stopPropagation();
           const val = option.dataset.value;
-
-          // UI update
           options.forEach((o) => o.classList.remove('selected'));
           option.classList.add('selected');
           textEl.textContent = option.textContent;
           selectBox.dataset.selected = val;
           selectBox.classList.remove('open');
-
-          // Hidden select sync — variant matching ke liye
           hiddenSelect.value = val;
           hiddenSelect.dispatchEvent(new Event('change', { bubbles: true }));
         });
       });
     });
 
-    // Close on outside click
     document.addEventListener('click', () => {
       document.querySelectorAll('.custom-select-box.open').forEach((el) => {
         el.classList.remove('open');
@@ -261,17 +276,17 @@
         const sizeDropdown = card.querySelector('.variant-select');
 
         if (sizeDropdown && !sizeDropdown.value) {
-          alert('Please select a size first!');
+          showToast('SELECT SIZE', 'Please choose a size first');
           return;
         }
 
         const matchedVariant = getSelectedVariant(card);
         if (!matchedVariant) {
-          alert('Combination not available!');
+          showToast('UNAVAILABLE', 'This combination is not available');
           return;
         }
         if (!matchedVariant.available) {
-          alert('This variant is currently Out of Stock!');
+          showToast('OUT OF STOCK', 'This variant is currently unavailable');
           return;
         }
 
@@ -356,6 +371,67 @@
 
 <style>
     /* ═══════════════════════════════════════════════════════════════════════════
+       TOAST NOTIFICATION
+       ═══════════════════════════════════════════════════════════════════════════ */
+    .ppc-toast-container {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .ppc-toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 10px 16px 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      border-left: 3px solid #e24b4a;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      min-width: 200px;
+      max-width: 280px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: auto;
+    }
+    .ppc-toast.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .ppc-toast__icon {
+      width: 18px;
+      height: 18px;
+      background: #e24b4a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .ppc-toast__label {
+      font-size: 11px;
+      color: #e24b4a;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .ppc-toast__msg {
+      font-size: 13px;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
        STRUCTURE STYLES
        ═══════════════════════════════════════════════════════════════════════════ */
     .custom-product-cards {
@@ -378,9 +454,7 @@
        content: '';
       width: 6px;
       height: 100%;
-      /* border-radius: 50%; */
       background: var(--swatch-color);
-      /* border: 1px solid #ddd; */
       flex-shrink: 0;
       display: block;
       left: 0;
@@ -392,7 +466,6 @@
        position: relative;
        overflow: hidden;
        height: 444px;
-
     }
     .product-card__image,
     .product-card__image img{
@@ -404,7 +477,6 @@
       display: block;
       transition: transform .5s ease;
      }
-
 
     .product-card__plus-icon {
       position: absolute;
@@ -421,7 +493,6 @@
        cursor:pointer;
         transition: all 0.35s ease;
     }
-
 
     /* ═══════════════════════════════════════════════════════════════════════════
        POPUP CARDS ELEMENTS
@@ -464,7 +535,6 @@
       font-weight: 200;}
     .product-price { color: #000; font-size: 16px; font-weight: 400; margin-bottom: 6px;font-family:lustria }
 
-
     .variant-selection-container { text-align: left; margin-bottom: 24px; }
     .variant-option-group { margin-bottom: 16px; }
     .variant-label { display: block; font-size: 14px; color: #000; margin-bottom: 0px; font-weight: 500; }
@@ -482,9 +552,9 @@
     .dropdown-chevron { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #fff; pointer-events: none; display: flex; align-items: center; }
 
     .product-btn { width: 100%; padding: 12px 24px; border: 1px solid #ffffff; background: #000000; color: #ffffff; font-size: 16px; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 22px;  transition: all 0.3s ease; }
-    {% comment %} .product-btn:hover:not(:disabled) { background: #fff; color: #000; } {% endcomment %}
     .product-btn:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-arrow { font-size: 20px; line-height: 1; transition: transform 0.2s; }
+
   /* CUSTOM SELECT BOX */
   .custom-select-box { position: relative; width: 100%; user-select: none; }
   .js-custom-select.open .custom-select-trigger{
@@ -521,7 +591,6 @@
   .custom-select-option {
     padding: 3px 16px; color: #000; font-size: 15px;
     cursor: pointer; transition: background 0.15s;
-   
   }
   .custom-select-option:last-child { border-bottom: none; }
   .custom-select-option:hover { background: #000; color: #fff; }
@@ -537,7 +606,6 @@
       .ppc-popup { max-width: 96%; padding: 24px 20px 20px;  }
       .custom-product-inner{
       padding:0px 1.5rem;}
-    
       .product-cards-grid{
       grid-template-columns:1fr 1fr;
       gap:12px;
@@ -546,13 +614,11 @@
     height:auto;
   aspect-ratio:2/2}
   .section-heading {
-    
     font-size: 24px;
     font-family: lustria;
     text-align: center;
     margin-bottom: 15px;
     margin-top: 10px;
-
     }
     .custom-product-cards {
     padding:35px 0px;}
@@ -560,7 +626,14 @@
     top: var(--icon-top-mobile) !important;
     left: var(--icon-left-mobile) !important;
   }
-
+  .ppc-toast-container {
+    top: 12px;
+    left: 12px;
+  }
+  .ppc-toast {
+    min-width: 180px;
+    max-width: 240px;
+  }
   }
 </style>
 
@@ -624,30 +697,30 @@
           "label": "Icon Position (Left)",
           "default": 65
         },
-              {
-        "type": "header",
-        "content": "Plus Icon Position — Mobile"
-      },
-      {
-        "type": "range",
-        "id": "icon_top_mobile",
-        "min": 5,
-        "max": 95,
-        "step": 1,
-        "unit": "%",
-        "label": "Icon Position Mobile (Top)",
-        "default": 30
-      },
-      {
-        "type": "range",
-        "id": "icon_left_mobile",
-        "min": 5,
-        "max": 95,
-        "step": 1,
-        "unit": "%",
-        "label": "Icon Position Mobile (Left)",
-        "default": 65
-      }
+        {
+          "type": "header",
+          "content": "Plus Icon Position — Mobile"
+        },
+        {
+          "type": "range",
+          "id": "icon_top_mobile",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "label": "Icon Position Mobile (Top)",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "icon_left_mobile",
+          "min": 5,
+          "max": 95,
+          "step": 1,
+          "unit": "%",
+          "label": "Icon Position Mobile (Left)",
+          "default": 65
+        }
       ]
     }
   ],
