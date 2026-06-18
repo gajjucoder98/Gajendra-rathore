@@ -64,9 +64,7 @@
                                     name="color-{{ block.id }}"
                                     value="{{ value | escape }}"
                                     class="color-swatch-input js-option-selector"
-                                    {% if forloop.first %}
-                                      checked
-                                    {% endif %}
+                                    
                                   >
                                   <label
                                     for="opt-{{ block.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
