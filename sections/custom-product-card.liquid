@@ -18,7 +18,8 @@
             </div>
             <div
               class="product-card__plus-icon"
-              style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;"
+              style="top: {{ block.settings.icon_top }}%; left: {{ block.settings.icon_left }}%;--icon-top-mobile: {{ block.settings.icon_top_mobile }}%;
+    --icon-left-mobile: {{ block.settings.icon_left_mobile }}%;"
             >
               {% render 'plus-icon' %}
             </div>
@@ -556,6 +557,10 @@
     }
     .custom-product-cards {
     padding:35px 0px;}
+     .product-card__plus-icon {
+    top: var(--icon-top-mobile) !important;
+    left: var(--icon-left-mobile) !important;
+  }
 
   }
 </style>
