@@ -1,0 +1,774 @@
+{%- liquid
+  assign section_id = section.id
+-%}
+
+<section class="wab-section" id="wab-{{ section_id }}">
+  <div class="wab-inner">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="wab-heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="wab-track-wrapper">
+        <div class="wab-track" id="wab-track-{{ section_id }}">
+          {%- for block in section.blocks -%}
+            {%- assign product = block.settings.product -%}
+   
+            {%- if product != blank -%}
+              {%- assign block_index = forloop.index0 -%}
+
+              {%- liquid
+                assign card_video_url = ''
+                if block.settings.card_video_pick != blank
+              
+                  for source in block.settings.card_video_pick.sources
+                    if source.format == 'mp4'
+                      assign card_video_url = source.url
+                      break
+                    endif
+   
+                  endfor
+                endif
+                if card_video_url == blank and block.settings.card_video != blank
+                  assign card_video_url = block.settings.card_video
+                endif
+
+         
+                assign modal_video_url = ''
+                if block.settings.modal_video_pick != blank
+                  for source in block.settings.modal_video_pick.sources
+                    if source.format == 'mp4'
+                      assign modal_video_url = source.url
+  
+                      break
+                    endif
+                  endfor
+                endif
+                if modal_video_url == blank and block.settings.modal_video != blank
+   
+                  assign modal_video_url = block.settings.modal_video
+                endif
+              -%}
+
+              <div class="wab-card" data-card-index="{{ block_index }}" data-section="{{ section_id }}" {{ block.shopify_attributes }}>
+                <div class="wab-card__media">
+           
+                  {%- if card_video_url != blank -%}
+                    <video class="wab-card__video" src="{{ card_video_url }}" autoplay muted loop playsinline></video>
+                  {%- elsif block.settings.card_image != blank -%}
+                    {{ block.settings.card_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'wab-card__img' }}
+                  {%- elsif product.featured_image -%}
+                    {{ product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'wab-card__img' }}
+                  {%- endif -%}
+                </div>
+
+                <div class="wab-card__info">
+                  <div class="wab-card__thumb">
+                   
+                    {%- if product.featured_image -%}
+                      {{ product.featured_image | image_url: width: 80 | image_tag: loading: 'lazy' }}
+                    {%- endif -%}
+                  </div>
+                  <div class="wab-card__meta">
+                    <span class="wab-card__title">{{ block.settings.card_title | default: product.title }}</span>
+                    <span class="wab-card__price">
+                      {%- if product.price_min != product.price_max -%}
+                        {{ product.price_min | money }} – {{ product.price_max | money }}
+                      {%- else -%}
+                        {{ product.price | money }}
+                      {%- endif -%}
+                    </span>
+                  </div>
+                </div>
+
+                <script class="wab-product-data" type="application/json">
+   
+                {
+                  "handle": {{ product.handle | json }},
+                  "title": {{ block.settings.card_title | default: product.title | json }},
+                  "description": {{ block.settings.card_description | default: product.description | strip_html | json }},
+                  "url": {{ product.url | json }},
+                  "price": {{ product.price | money | json }},
+                  "priceMin": {{ product.price_min | money | json }},
+                  "priceMax": {{ product.price_max | money | json }},
+                  "featured_image": {{ product.featured_image | image_url: width: 600 | json }},
+                  "images": [
+                    {%- for img in product.images limit: 4 -%}
+                      {{ img | image_url: width: 600 | json }}{%- unless forloop.last -%},{%- endunless -%}
+                    {%- endfor -%}
+                  ],
+                  "modal_video": {{ modal_video_url | json }},
+                  "card_video": {{ card_video_url | json }},
+                  "card_image": {%- if block.settings.card_image -%}{{ block.settings.card_image | image_url: width: 600 | json }}{%- else -%}null{%- endif -%},
+                  "has_only_default_variant": {{ product.has_only_default_variant | json }},
+                  "options": [
+                    {%- for option in product.options_with_values -%}
+                      {
+                        "name": {{ option.name | json }},
+                        "values": {{ option.values | json }}
+                      }{%- unless forloop.last -%},{%- endunless -%}
+                    {%- endfor -%}
+                  ],
+                  "variants": [
+             
+                    {%- for variant in product.variants -%}
+                      {
+                        "id": {{ variant.id }},
+                        "title": {{ variant.title | json }},
+                        "price": {{ variant.price | money | json }},
+                        "available": {{ variant.available | json }},
+                        "options": {{ variant.options | json }},
+                        "featured_image": {%- if variant.featured_image -%}{{ variant.featured_image | image_url: width: 200 | json }}{%- else -%}null{%- endif -%}
+                      }{%- unless forloop.last -%},{%- endunless -%}
+                    {%- endfor -%}
+                  ]
+                }
+        
+                </script>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<div class="wab-modal-backdrop" id="wab-modal-backdrop-{{ section_id }}" aria-hidden="true">
+  <button class="wab-modal__close" aria-label="Close" id="wab-close-{{ section_id }}">&#x2715;</button>
+
+  <button class="wab-arrow wab-arrow--prev" id="wab-prev-{{ section_id }}" aria-label="Previous">&#8592;</button>
+  <button class="wab-arrow wab-arrow--next" id="wab-next-{{ section_id }}" aria-label="Next">&#8594;</button>
+
+  
+  <div class="wab-modal-stage" onclick="event.stopPropagation()">
+    <div class="wab-side-card wab-side-card--prev" id="wab-side-prev-{{ section_id }}"></div>
+
+    <div class="wab-modal" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
+      <div class="wab-modal__video-side">
+        <video class="wab-modal__video" id="wab-modal-video-{{ section_id }}" autoplay loop playsinline></video>
+        <button class="wab-modal__mute-btn" id="wab-mute-{{ section_id }}" aria-label="Toggle sound">
+          <svg id="wab-icon-mute-{{ section_id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="white">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+    
+          </svg>
+        </button>
+        <button class="wab-modal__cart-float" id="wab-cart-float-{{ section_id }}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <span class="wab-float-badge" id="wab-float-badge-{{ section_id }}" style="display:none">0</span>
+        </button>
+      </div>
+
+      <div class="wab-mobile-float-card" id="wab-mobile-float-card-{{ section_id }}">
+        <div class="wab-mfc-thumb" id="wab-mfc-thumb-{{ section_id }}"></div>
+        <div class="wab-mfc-meta">
+          <div class="wab-mfc-title" id="wab-mfc-title-{{ section_id }}"></div>
+          <div class="wab-mfc-price" id="wab-mfc-price-{{ section_id }}"></div>
+        </div>
+        <button class="wab-mfc-btn">Shop Now</button>
+      </div>
+
+      <div class="wab-modal__detail-side" id="wab-detail-side-{{ section_id }}">
+        <div class="wab-drawer-handle"></div>
+        <div class="wab-modal__detail-scroll">
+          <div class="wab-modal__images" id="wab-modal-images-{{ section_id }}"></div>
+
+       
+          <h3 class="wab-modal__title" id="wab-modal-title-{{ section_id }}"></h3>
+          <div class="wab-modal__price" id="wab-modal-price-{{ section_id }}"></div>
+
+          <div class="wab-modal__desc-wrap">
+            <p class="wab-modal__desc-label">Description</p>
+            <div class="wab-modal__desc" id="wab-modal-desc-{{ section_id }}"></div>
+            <button class="wab-modal__read-more" id="wab-read-more-{{ section_id }}">Read more</button>
+          </div>
+
+          <div class="wab-modal__variants" id="wab-modal-variants-{{ section_id }}"></div>
+
+          <div class="wab-modal__actions">
+            <a class="wab-btn wab-btn--outline" id="wab-more-info-{{ section_id }}" href="#" target="_blank">More info</a>
+            <button class="wab-btn wab-btn--dark js-wab-atc" id="wab-atc-{{ section_id }}" data-section="{{ section_id }}">Add to cart</button>
+            <div class="wab-cart-icon-wrap">
+              <a class="wab-btn wab-btn--icon" id="wab-cart-link-{{ section_id }}" href="/cart" aria-label="View cart">
+         
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 01-8 0"/>
+        
+                </svg>
+              </a>
+              <span class="wab-cart-badge" id="wab-cart-badge-{{ section_id }}" style="display:none">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wab-side-card wab-side-card--next" id="wab-side-next-{{ section_id }}"></div>
+  </div>
+</div>
+
+<style>
+.wab-section { padding: 50px 0; background: var(--color-background, #fff); }
+.wab-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+.wab-heading { font-family: lustria, serif; font-size: clamp(26px, 4vw, 40px); font-weight: 400; text-align: center; margin: 0 0 36px; letter-spacing: 0.04em; }
+.wab-track-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.wab-track-wrapper::-webkit-scrollbar { display: none; }
+.wab-track { display: flex; gap: 14px; width: max-content; min-width: 100%; }
+.wab-card { position: relative; width: 220px; flex-shrink: 0; border-radius: 10px; overflow: hidden; cursor: pointer; background: #111; box-shadow: 0 4px 18px rgba(0,0,0,.18); transition: transform .3s ease, box-shadow .3s ease; }
+@media (min-width: 769px) { .wab-card { width: calc((100vw - 48px - 14px * 4) / 5); max-width: 280px; } }
+.wab-card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(0,0,0,.28); }
+.wab-card__media { width: 100%; aspect-ratio: 9/16; position: relative; overflow: hidden; }
+.wab-card__video, .wab-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wab-card__info { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; padding: 10px; background: linear-gradient(0deg, rgba(0,0,0,.72) 0%, transparent 100%); }
+.wab-card__thumb { width: 35px; height: 35px; border-radius: 2px; overflow: hidden; flex-shrink: 0; border: 1px solid rgb(255, 255, 255); box-shadow: rgb(0, 0, 0) 0px 0px 0px; }
+.wab-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wab-card__meta { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.wab-card__title { color: #fff; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.wab-card__price { color: rgba(255,255,255,.85); font-size: 14px; line-height:normal }
+
+/* Backdrop */
+.wab-modal-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.62); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+.wab-modal-backdrop.active { opacity: 1; pointer-events: all; }
+.wab-modal-stage { display: flex; align-items: center; justify-content: center; gap: 18px; max-width: 100%;  }
+
+/* Side Cards */
+.wab-side-card { position: relative; width: 200px; flex-shrink: 0; border-radius: 10px; overflow: hidden; cursor: pointer; background: #111; box-shadow: 0 4px 18px rgba(0,0,0,.35); transition: transform .25s ease, opacity .25s ease; opacity: .92; display: none; }
+@media (min-width: 769px) { .wab-side-card { display: block; } }
+.wab-side-card:hover { transform: translateY(-3px); opacity: 1; }
+.wab-side-card__media { width: 100%; aspect-ratio: 9/16; overflow: hidden; position: relative; }
+.wab-side-card__video, .wab-side-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wab-side-card__info { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 8px; padding: 8px; background: linear-gradient(0deg, rgba(0,0,0,.72) 0%, transparent 100%); }
+.wab-side-card__thumb { width: 36px; height: 36px; border-radius: 4px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,.4); }
+.wab-side-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wab-side-card__meta { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.wab-side-card__title { color: #fff; font-size: 10px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wab-side-card__price { color: rgba(255,255,255,.85); font-size: 9.5px; margin-top: 1px; }
+
+/* Main Modal */
+.wab-modal { position: relative; display: flex; width: min(920px, 88vw); height: min(680px, 88vh); max-height: 88vh; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 24px 80px rgba(0,0,0,.55); transform: scale(.94); transition: transform .3s cubic-bezier(.22,.61,.36,1); }
+.wab-modal-backdrop.active .wab-modal { transform: scale(1); }
+.wab-modal__close { position: fixed; top: 18px; right: 22px; z-index: 10002; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+.wab-modal__close:hover { background: rgba(255,255,255,.32); }
+
+.wab-arrow { position: fixed; top: 50%; transform: translateY(-50%); z-index: 10001; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.28); color: #fff; width: 46px; height: 46px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+.wab-arrow:hover { background: rgba(255,255,255,.38); }
+.wab-arrow--prev { left: 22px; }
+.wab-arrow--next { right: 22px; }
+
+.wab-modal__video-side { position: relative; flex: 0 0 55%; background: #000; overflow: hidden; min-height: 100%; }
+.wab-modal__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wab-modal__mute-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.5); border: none; border-radius: 4px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s; }
+.wab-modal__mute-btn:hover { background: rgba(0,0,0,.75); }
+.wab-modal__cart-float { display: none; }
+
+.wab-modal__detail-side { flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; min-width: 0; }
+.wab-modal__detail-side::-webkit-scrollbar { display: none; }
+.wab-modal__detail-scroll { display: flex; flex-direction: column; gap: 0; min-height: 100%; padding:10px 0px; padding-bottom:0px;}
+
+.wab-modal__images { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width:90%; margin:auto; margin-bottom: 14px; overflow-x: auto; scroll-snap-type: x mandatory; -ms-overflow-style: none; }
+.wab-modal__images::-webkit-scrollbar { height: 4px; }
+.wab-modal__images img { width: 232px; height: 232px; object-fit: cover; display: block; }
+
+.wab-modal__title { padding:0px 22px;font-size: 18px; font-weight: 400; color: #111; margin: 0 0 4px; line-height: 1.3; }
+.wab-modal__price { padding:0px 22px; font-size: 16px; color: #111; margin-bottom: 14px; font-family: lustria, serif; }
+.wab-modal__desc-wrap { margin-bottom: 18px;padding:0px 22px; }
+.wab-modal__desc-label { font-size: 13px; font-weight: 600; color: #111; margin: 0 0 4px; }
+.wab-modal__desc { font-size: 13px; color: #444; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; transition: all .25s ease; }
+.wab-modal__desc.expanded { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.wab-modal__read-more { background: none; border: none; font-size: 12px; font-weight: 600; color: #111; cursor: pointer; padding: 0; text-decoration: underline; margin-top: 4px; }
+
+.wab-modal__variants { margin-bottom: 20px; padding:0px 22px; }
+.wab-variant-group { margin-bottom: 14px; }
+.wab-variant-label { display: block; font-size: 12px; font-weight: 600; color: #111; margin-bottom: 8px; letter-spacing: .04em; }
+.wab-variant-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.wab-size-btn { padding: 6px 12px; border: 1px solid #bbb; background: transparent; color: #111; font-size: 12px; border-radius: 4px; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.wab-size-btn.active { background: #111; color: #fff; border-color: #111; }
+
+.wab-modal__actions { display: flex; gap: 8px; align-items: center; margin-top: auto; padding-top: 6px; position: sticky; bottom: 0px; background: #fff;box-shadow: rgb(0, 0, 0) 0px 2px 15px; padding: 15px; }
+.wab-btn { display: inline-flex; align-items: center; line-height:normal;justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; border-radius: 4px; cursor: pointer; border: 1px solid #111; padding: 10px 16px; text-decoration: none; white-space: nowrap; transition: all .22s ease; letter-spacing: .03em; font-family: inherit; }
+.wab-btn--outline { background: transparent; color: #111; }
+.wab-btn--dark { background: #111; color: #fff; flex: 1; border-color: #111; }
+.wab-btn--icon { background: transparent; color: #111; padding: 9px 11px; border: 1px solid #ccc; }
+
+.wab-cart-icon-wrap { position: relative; display: inline-flex; }
+.wab-cart-badge { position: absolute; top: -7px; right: -7px; background-color: rgb(var(--color-button, 17,17,17)); color: rgb(var(--color-button-text, 255,255,255)); height: 1.7rem; width: 1.7rem; border-radius: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; line-height: 1; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+
+.wab-toast-wrap { position: fixed; bottom: 24px; left: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.wab-toast { display: flex; align-items: center; gap: 10px; background: #1a1a1a; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.25); opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; pointer-events: auto; }
+.wab-toast.show { opacity: 1; transform: translateY(0); }
+.wab-toast__dot { width: 18px; height: 18px; border-radius: 50%; background: #c0392b; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+.wab-mobile-float-card { display: none; }
+.wab-drawer-handle { display: none; }
+
+/* ==========================================
+   MOBILE DESIGN (image_9ac644.jpg + Vertical Slider)
+   ========================================== */
+@media (max-width: 768px) {
+  .wab-inner { padding: 0 12px; }
+  .wab-card { width: 150px; }
+  .wab-side-card, .wab-arrow { display: none !important; }
+
+  .wab-modal-backdrop { background: #000; touch-action: none; } /* Prevents page body scroll background */
+  
+  .wab-modal {
+    flex-direction: column !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    background: #000 !important;
+    touch-action: none; /* Allows us to handle native-like swiping customly */
+  }
+
+  .wab-modal__video-side {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    flex: none !important;
+    z-index: 1;
+  }
+  
+  .wab-modal__video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+  .wab-modal__close { top: 15px !important; right: 15px !important; background: rgba(0, 0, 0, 0.5) !important; z-index: 10005 !important; }
+  .wab-modal__mute-btn { top: auto !important; bottom: 160px !important; right: 15px !important; background: rgba(0, 0, 0, 0.6) !important; border-radius: 50% !important; width: 42px !important; height: 42px !important; z-index: 10004 !important; }
+
+  .wab-modal__cart-float {
+    display: flex !important;
+    position: absolute; bottom: 105px; right: 15px;
+    background: rgba(0, 0, 0, 0.6); border: none; border-radius: 50%;
+    width: 42px; height: 42px; align-items: center; justify-content: center; z-index: 10004;
+  }
+  .wab-modal__cart-float svg { stroke: #fff; }
+  .wab-float-badge { position: absolute; top: -4px; right: -4px; background: #fff; color: #000; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  /* Floating Card Look (image_9ac644.jpg) */
+  .wab-mobile-float-card {
+    display: flex !important;
+    position: absolute;
+    bottom: 24px; left: 14px; right: 14px;
+    background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px; padding: 12px;
+    align-items: center; gap: 12px; z-index: 10002;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); cursor: pointer;
+  }
+  .wab-mfc-thumb { width: 50px; height: 50px; border-radius: 6px; overflow: hidden; background: #eaeaea; flex-shrink: 0; }
+  .wab-mfc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .wab-mfc-meta { flex: 1; min-width: 0; }
+  .wab-mfc-title { font-size: 14px; font-weight: 600; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wab-mfc-price { font-size: 13px; color: #333; margin-top: 2px; }
+  .wab-mfc-btn { background: #000; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+
+  /* Detail Bottom Drawer Dropdown */
+  .wab-modal__detail-side {
+    position: absolute !important; bottom: 0 !important;
+    left: 0 !important; right: 0 !important;
+    z-index: 10010 !important; background: #fff !important; border-radius: 20px 20px 0 0 !important;
+    max-height: 70vh !important; transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3) !important;
+    touch-action: pan-y; /* Allows normal inside drawer scroll */
+  }
+  .wab-modal__detail-side.drawer-open { transform: translateY(0) !important; }
+  .wab-drawer-handle { display: block !important; width: 40px; height: 5px; background: #ccc; border-radius: 3px; margin: 12px auto 8px; }
+  .wab-modal__detail-scroll { padding: 10px 0 0 0 !important; }
+  .wab-modal__images { display: flex !important; }
+  .wab-modal__actions { background: #fff !important; padding: 15px 20px 32px !important; }
+}
+</style>
+
+<script>
+(function () {
+  const sId = {{ section_id | json }};
+  
+  const backdrop = document.getElementById(`wab-modal-backdrop-${sId}`);
+  const modalContainer = backdrop.querySelector('.wab-modal');
+  const modalVideo = document.getElementById(`wab-modal-video-${sId}`);
+  const muteIcon = document.getElementById(`wab-icon-mute-${sId}`);
+  const imgWrap = document.getElementById(`wab-modal-images-${sId}`);
+  const titleEl = document.getElementById(`wab-modal-title-${sId}`);
+  const priceEl = document.getElementById(`wab-modal-price-${sId}`);
+  const descEl = document.getElementById(`wab-modal-desc-${sId}`);
+  const readMore = document.getElementById(`wab-read-more-${sId}`);
+  const varWrap = document.getElementById(`wab-modal-variants-${sId}`);
+  const moreInfo = document.getElementById(`wab-more-info-${sId}`);
+  const atcBtn = document.getElementById(`wab-atc-${sId}`);
+  const cartBadge = document.getElementById(`wab-cart-badge-${sId}`);
+  const cards = [...document.querySelectorAll(`#wab-${sId} .wab-card`)];
+  const mobileFloatCard = document.getElementById(`wab-mobile-float-card-${sId}`);
+  const mfcThumb = document.getElementById(`wab-mfc-thumb-${sId}`);
+  const mfcTitle = document.getElementById(`wab-mfc-title-${sId}`);
+  const mfcPrice = document.getElementById(`wab-mfc-price-${sId}`);
+  const detailSide = document.getElementById(`wab-detail-side-${sId}`);
+  const floatCartBtn = document.getElementById(`wab-cart-float-${sId}`);
+  const floatCartBadge = document.getElementById(`wab-float-badge-${sId}`);
+
+  // Side Cards References
+  const sidePrevCard = document.getElementById(`wab-side-prev-{{ section_id }}`);
+  const sideNextCard = document.getElementById(`wab-side-next-{{ section_id }}`);
+
+  let currentIndex = 0;
+  let allProducts = [];
+  let selectedVariantId = null;
+  // Touch Swipe Variables for Vertical Navigation
+  let touchStartY = 0;
+  let touchEndY = 0;
+  const UNMUTE_SVG = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>';
+  const MUTED_SVG = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+  function init() {
+    cards.forEach(card => {
+      const raw = card.querySelector('.wab-product-data');
+      try { allProducts.push(JSON.parse(raw.textContent)); } catch(e) { allProducts.push(null); }
+      card.addEventListener('click', () => openModal(parseInt(card.dataset.cardIndex, 10)));
+    });
+    fetchCartCount();
+    bindGlobalEvents();
+    initVerticalSwipe();
+  }
+
+  function bindGlobalEvents() {
+    document.getElementById(`wab-close-${sId}`).addEventListener('click', closeModal);
+    document.getElementById(`wab-prev-${sId}`).addEventListener('click', (e) => { e.stopPropagation(); if (currentIndex > 0) openModal(currentIndex - 1); });
+    document.getElementById(`wab-next-${sId}`).addEventListener('click', (e) => { e.stopPropagation(); if (currentIndex < cards.length - 1) openModal(currentIndex + 1); });
+    
+    // Side cards click event to change slides
+    if (sidePrevCard) sidePrevCard.addEventListener('click', () => { if (currentIndex > 0) openModal(currentIndex - 1); });
+    if (sideNextCard) sideNextCard.addEventListener('click', () => { if (currentIndex < cards.length - 1) openModal(currentIndex + 1); });
+
+    document.getElementById(`wab-mute-${sId}`).addEventListener('click', toggleMute);
+    mobileFloatCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+      detailSide.classList.add('drawer-open');
+    });
+    backdrop.addEventListener('click', (e) => { 
+      if (detailSide.classList.contains('drawer-open')) {
+        detailSide.classList.remove('drawer-open');
+      } else if (e.target === backdrop) {
+        closeModal(); 
+      }
+    });
+    detailSide.querySelector('.wab-drawer-handle').addEventListener('click', () => {
+      detailSide.classList.remove('drawer-open');
+    });
+    floatCartBtn.addEventListener('click', () => { window.location.href = '/cart'; });
+    readMore.addEventListener('click', toggleDescription);
+    atcBtn.addEventListener('click', handleAddToCart);
+  }
+
+  // Vertical Slider Logic for Reels Swipe Up/Down
+  function initVerticalSwipe() {
+    modalContainer.addEventListener('touchstart', (e) => {
+      // If the drawer dropdown is open, do not trigger video slider swiping
+      if (detailSide.classList.contains('drawer-open')) return;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    modalContainer.addEventListener('touchend', (e) => {
+      if (detailSide.classList.contains('drawer-open')) return;
+      touchEndY = e.changedTouches[0].clientY;
+      handleSwipeGesture();
+    }, { passive: true });
+  }
+
+  function handleSwipeGesture() {
+    const swipeDistance = touchStartY - touchEndY;
+    const threshold = 60;
+    // Minimum drag px to swap video
+
+    if (swipeDistance > threshold) {
+      // Swipe Up -> Load Next Video
+      if (currentIndex < cards.length - 1) {
+        openModal(currentIndex + 1);
+      } else {
+        showToast("You've reached the last video");
+      }
+    } else if (swipeDistance < -threshold) {
+      // Swipe Down -> Load Previous Video
+      if (currentIndex > 0) {
+        openModal(currentIndex - 1);
+      }
+    }
+  }
+
+  // Helper function to generate html inside side cards dynamically
+  function renderSideCardContent(targetElement, productIndex) {
+    const prod = allProducts[productIndex];
+    if (!prod || !targetElement) {
+      if (targetElement) targetElement.style.visibility = 'hidden';
+      return;
+    }
+    targetElement.style.visibility = 'visible';
+
+    let mediaHtml = '';
+    if (prod.card_video) {
+      mediaHtml = `<video class="wab-side-card__video" src="${prod.card_video}" autoplay muted loop playsinline></video>`;
+    } else if (prod.card_image) {
+      mediaHtml = `<img class="wab-side-card__img" src="${prod.card_image}" loading="lazy" />`;
+    } else if (prod.featured_image) {
+      mediaHtml = `<img class="wab-side-card__img" src="${prod.featured_image}" loading="lazy" />`;
+    }
+
+    const priceDisplay = prod.priceMin !== prod.priceMax ? `${prod.priceMin} – ${prod.priceMax}` : prod.price;
+
+    targetElement.innerHTML = `
+      <div class="wab-side-card__media">${mediaHtml}</div>
+      <div class="wab-side-card__info">
+        <div class="wab-side-card__thumb">
+          ${prod.featured_image ? `<img src="${prod.featured_image}" loading="lazy" />` : ''}
+        </div>
+        <div class="wab-side-card__meta">
+          <span class="wab-side-card__title">${prod.title}</span>
+          <span class="wab-side-card__price">${priceDisplay}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function openModal(index) {
+    currentIndex = index;
+    const product = allProducts[index];
+    if (!product) return;
+
+    detailSide.classList.remove('drawer-open');
+
+    titleEl.textContent = product.title;
+    const displayPrice = product.priceMin !== product.priceMax ?
+      `${product.priceMin} – ${product.priceMax}` : product.price;
+    priceEl.textContent = displayPrice;
+    descEl.textContent = product.description || '';
+    moreInfo.href = product.url || '#';
+    mfcTitle.textContent = product.title;
+    mfcPrice.textContent = displayPrice;
+    mfcThumb.innerHTML = product.featured_image ? `<img src="${product.featured_image}" alt="${product.title}">` : '';
+
+    descEl.classList.remove('expanded');
+    readMore.textContent = 'Read more';
+    readMore.style.display = product.description ? 'inline' : 'none';
+
+    renderModalImages(product);
+    buildVariants(product);
+
+    const videoSrc = product.modal_video || product.card_video || '';
+    if (videoSrc) {
+      modalVideo.src = videoSrc;
+      modalVideo.load();
+      playVideoWithSound();
+    } else {
+      modalVideo.pause();
+      modalVideo.removeAttribute('src');
+    }
+
+    backdrop.classList.add('active');
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    
+    // Desktop arrows toggles
+    document.getElementById(`wab-prev-${sId}`).style.display = index === 0 ? 'none' : 'flex';
+    document.getElementById(`wab-next-${sId}`).style.display = index === cards.length - 1 ? 'none' : 'flex';
+
+    // Dynamic Side Slide Content Generation
+    renderSideCardContent(sidePrevCard, index - 1);
+    renderSideCardContent(sideNextCard, index + 1);
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('active');
+    detailSide.classList.remove('drawer-open');
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    modalVideo.pause();
+    modalVideo.src = '';
+  }
+
+  function renderModalImages(product) {
+    imgWrap.innerHTML = '';
+    const imgs = product.images?.length ?
+      product.images : (product.featured_image ? [product.featured_image] : []);
+    imgs.slice(0, 4).forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      imgWrap.appendChild(img);
+    });
+  }
+
+  function buildVariants(product) {
+    varWrap.innerHTML = '';
+    selectedVariantId = null;
+    if (!product || product.has_only_default_variant) {
+      if (product?.variants?.length) selectedVariantId = product.variants[0].id;
+      return;
+    }
+
+    product.options.forEach((opt, optIdx) => {
+      const group = document.createElement('div');
+      group.className = 'wab-variant-group';
+      group.innerHTML = `<span class="wab-variant-label">Select ${opt.name}</span>`;
+
+      const btnsRow = document.createElement('div');
+      btnsRow.className = 'wab-variant-btns';
+
+      opt.values.forEach((val, valIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'wab-size-btn';
+        btn.textContent = val;
+        if (valIdx === 0) btn.classList.add('active');
+
+        btn.addEventListener('click', () => {
+          btnsRow.querySelectorAll('.wab-size-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          resolveVariant(product);
+        });
+        btnsRow.appendChild(btn);
+      });
+
+      group.appendChild(btnsRow);
+      varWrap.appendChild(group);
+    });
+    resolveVariant(product);
+  }
+
+  function resolveVariant(product) {
+    const selections = [...varWrap.querySelectorAll('.wab-variant-btns')].map(row => {
+      const active = row.querySelector('.wab-size-btn.active');
+      return active ? active.textContent.toLowerCase().trim() : null;
+    });
+    const matched = product.variants.find(v => v.options.every((o, i) => selections[i] === null || o.toLowerCase().trim() === selections[i]));
+    if (matched) {
+      selectedVariantId = matched.id;
+      priceEl.textContent = matched.price;
+    }
+  }
+
+  async function handleAddToCart() {
+    const product = allProducts[currentIndex];
+    if (!product) return;
+    const varId = selectedVariantId || product.variants?.[0]?.id;
+    if (!varId) { showToast('Product unavailable'); return; }
+
+    const origText = atcBtn.textContent;
+    atcBtn.disabled = true;
+    atcBtn.textContent = 'Adding…';
+
+    try {
+      const res = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [{ id: Number(varId), quantity: 1 }] })
+      });
+      if (!res.ok) throw new Error();
+
+      atcBtn.textContent = 'Added ✓';
+      detailSide.classList.remove('drawer-open'); 
+      refreshCartThemeBubble();
+      fetchCartCount();
+    } catch {
+      showToast('Something went wrong.');
+    } finally {
+      setTimeout(() => { atcBtn.disabled = false; atcBtn.textContent = origText; }, 1800);
+    }
+  }
+
+  function toggleMute() {
+    modalVideo.muted = !modalVideo.muted;
+    muteIcon.innerHTML = modalVideo.muted ? MUTED_SVG : UNMUTE_SVG;
+  }
+
+  function playVideoWithSound() {
+    modalVideo.muted = false;
+    muteIcon.innerHTML = UNMUTE_SVG;
+    modalVideo.play().catch(() => {
+      modalVideo.muted = true;
+      muteIcon.innerHTML = MUTED_SVG;
+      modalVideo.play().catch(() => {});
+    });
+  }
+
+  function toggleDescription() {
+    descEl.classList.toggle('expanded');
+    readMore.textContent = descEl.classList.contains('expanded') ? 'Read less' : 'Read more';
+  }
+
+  function fetchCartCount() {
+    fetch('/cart.js').then(r => r.json()).then(d => updateCartBadge(d.item_count || 0)).catch(() => {});
+  }
+
+  function updateCartBadge(count) {
+    if (count > 0) {
+      if(cartBadge) { cartBadge.textContent = count;
+      cartBadge.style.display = 'flex'; }
+      if(floatCartBadge) { floatCartBadge.textContent = count; floatCartBadge.style.display = 'flex';
+      }
+    } else {
+      if(cartBadge) cartBadge.style.display = 'none';
+      if(floatCartBadge) floatCartBadge.style.display = 'none';
+    }
+  }
+
+  async function refreshCartThemeBubble() {
+    try {
+      const res = await fetch('/?sections=cart-icon-bubble');
+      if (res.ok) {
+        const data = await res.json();
+        if (data['cart-icon-bubble']) {
+          const parsed = new DOMParser().parseFromString(data['cart-icon-bubble'], 'text/html');
+          const newEl = parsed.querySelector('#cart-icon-bubble');
+          const currentEl = document.querySelector('#cart-icon-bubble');
+          if (newEl && currentEl) currentEl.innerHTML = newEl.innerHTML;
+        }
+      }
+    } catch(e) {}
+  }
+
+  function showToast(msg) {
+    let wrap = document.querySelector('.wab-toast-wrap') ||
+      document.createElement('div');
+    if (!wrap.className) { wrap.className = 'wab-toast-wrap'; document.body.appendChild(wrap); }
+    const t = document.createElement('div');
+    t.className = 'wab-toast';
+    t.innerHTML = `<div class="wab-toast__dot">!</div><span class="wab-toast__txt">${msg}</span>`;
+    wrap.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 350); }, 2800);
+  }
+
+  init();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Watch & Buy",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Section Heading", "default": "Watch & Buy" }
+  ],
+  "blocks": [
+    {
+      "type": "video_card",
+      "name": "Video Card",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product" },
+        { "type": "text", "id": "card_title", "label": "Custom Card Title (optional)" },
+        { "type": "textarea", "id": "card_description", "label": "Custom Description (optional)" },
+        { "type": "header", "content": "Card Thumbnail Video" },
+        { "type": "video", "id": "card_video_pick", "label": "Card Video" },
+        { "type": "text", "id": "card_video", "label": "Card Video URL (fallback)" },
+        { "type": "image_picker", "id": "card_image", "label": "Card Image (fallback)" },
+        { "type": "header", "content": "Modal Video" },
+        { "type": "video", "id": "modal_video_pick", "label": "Modal Video" },
+        { "type": "text", "id": "modal_video", "label": "Modal Video URL (fallback)" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Watch & Buy", "blocks": [{ "type": "video_card" }, { "type": "video_card" }] }
+  ]
+}
+{% endschema %}
